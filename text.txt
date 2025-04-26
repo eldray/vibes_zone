@@ -1,0 +1,36 @@
+vibezone/
+├── backend/
+│   ├── config/
+│   │   └── database.js           # SQLite database configuration
+│   ├── controllers/
+│   │   ├── authController.js     # Authentication logic
+│   │   ├── postController.js     # Post fetching/filtering logic
+│   │   ├── reelController.js     # Video upload/streaming logic
+│   │   └── messageController.js  # Chat message logic
+│   ├── middleware/
+│   │   └── auth.js              # JWT authentication middleware
+│   ├── models/
+│   │   ├── User.js              # User model
+│   │   ├── Post.js              # Post model
+│   │   ├── Reel.js              # Reel model
+│   │   └── Message.js           # Message model
+│   ├── routes/
+│   │   ├── auth.js              # Auth routes (/api/auth/*)
+│   │   ├── posts.js             # Post routes (/api/posts/*)
+│   │   ├── reels.js             # Reel routes (/api/reels/*)
+│   │   └── messages.js          # Message routes (/api/messages/*)
+│   ├── public/
+│   │   └── uploads/             # Local storage for videos/images
+│   ├── sockets/
+│   │   └── chat.js              # Socket.IO logic for real-time chat
+│   ├── package.json             # Node.js dependencies
+│   ├── server.js                # Main server file
+│   └── .env                     # Environment variables
+├── frontend/
+│   ├── index.html               # Home page
+│   ├── messages.html            # Messages page
+│   ├── reels.html               # Reels page
+│   ├── explore.html             # Explore page
+│   └── assets/                  # Static assets (if needed, e.g., images)
+├── README.md                    # Project documentation
+└── .gitignore                   # Git ignore file
