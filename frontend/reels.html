@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VibeZone | Reels</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.5/babel.min.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #fafafa;
+      }
+
+      .gradient-text {
+        background: linear-gradient(
+          90deg,
+          #ff9a8b 0%,
+          #ff6b95 50%,
+          #ff8e53 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .reels-container {
+        height: calc(100vh - 4rem);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .video-wrapper {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        transition: transform 0.3s ease;
+      }
+
+      .video-player {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .video-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.8) 0%,
+          rgba(0, 0, 0, 0) 50%
+        );
+        padding: 1rem;
+        color: white;
+      }
+
+      .video-controls {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 1rem;
+      }
+
+      .control-button {
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      }
+
+      .control-button:hover {
+        transform: scale(1.1);
+      }
+
+      .side-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 1rem;
+      }
+
+      .side-button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: white;
+        font-size: 0.875rem;
+      }
+
+      .side-button i {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 flex items-center">
+              <i class="fas fa-fire text-2xl gradient-text"></i>
+              <span class="ml-2 text-xl font-bold gradient-text">VibeZone</span>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <div class="hidden md:ml-6 md:flex md:space-x-8">
+              <a
+                href="index.html"
+                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >Home</a
+              >
+              <a
+                href="#"
+                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >Explore</a
+              >
+              <a
+                href="reels.html"
+                class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >Reels</a
+              >
+              <a
+                href="messages.html"
+                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >Messages</a
+              >
+            </div>
+          </div>
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <button
+                type="button"
+                class="relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-500 to-orange-500 shadow-sm hover:from-pink-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <span>Create Post</span>
+              </button>
+            </div>
+            <div class="ml-4 flex items-center md:ml-6">
+              <button
+                type="button"
+                class="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <span class="sr-only">View notifications</span>
+                <i class="far fa-bell text-xl"></i>
+              </button>
+              <div class="ml-3 relative">
+                <div>
+                  <button
+                    type="button"
+                    class="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    id="user-menu-button"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                  >
+                    <span class="sr-only">Open user menu</span>
+                    <img
+                      class="h-8 w-8 rounded-full"
+                      src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      alt=""
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Reels Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">🎥 Reels</h2>
+      <div id="reels-root" class="reels-container"></div>
+    </div>
+
+    <script type="text/babel">
+      const { useState, useEffect, useRef } = React;
+
+      const ReelsApp = () => {
+        const [currentIndex, setCurrentIndex] = useState(0);
+        const [isPlaying, setIsPlaying] = useState(true);
+        const [isMuted, setIsMuted] = useState(false);
+        const videoRefs = useRef([]);
+
+        // Mock video data
+        const videos = [
+          {
+            id: 1,
+            url: "https://v77.tiktokcdn.com/3f7e0e0c8f0f4b0e9b8f6c7d2e1a3b4c/6719b4a6/video/tos/useast2a/tos-useast2a-ve-0068c004/1234567890abcdef1234567890abcdef/?a=1233&ch=0&cr=0&dr=0&lr=tiktok_m&cd=0%7C0%7C0%7C0&br=2500&bt=1250&cs=0&ds=3&ft=ebA.3B3r9q8Zmo0P~O7yzz0P3p8q&mime_type=video_mp4&qs=0&rc=1234567890abcdef1234567890abcdef%3Apm9kZ2Y2OWZmaTMzNzczM0%40b2Y2OWZmaTMzNzczM0%5E1234567890abcdef1234567890abcdef&btag=80000&l=20241025120000F4A9B7C2D3E4F5A6B7C8",
+            creator: "@cryptoqueen",
+            avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+            description: "Creating digital art with AI tools #DigitalArt",
+            likes: 2400,
+            comments: 328,
+            duration: "1:23",
+          },
+          {
+            id: 2,
+            url: "https://v77.tiktokcdn.com/4g8f1f1d9g1g5c1fa0c97d8e3f2b4c5d/6719b4a7/video/tos/useast2a/tos-useast2a-ve-0068c003/abcdef1234567890abcdef1234567890/?a=1233&ch=0&cr=0&dr=0&lr=tiktok_m&cd=0%7C0%7C0%7C0&br=2500&bt=1250&cs=0&ds=3&ft=ebA.3B3r9q8Zmo0P~O7yzz0P3p8q&mime_type=video_mp4&qs=0&rc=abcdef1234567890abcdef1234567890%3ApnZkZ2Y2OWZmaTMzNzczM0%40b2Y2OWZmaTMzNzczM0%5Eabcdef1234567890abcdef1234567890&btag=80000&l=20241025120000F4A9B7C2D3E4F5A6B7C8",
+            creator: "@beatsmith",
+            avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+            description: "Studio session for my new track #Music",
+            likes: 5700,
+            comments: 892,
+            duration: "0:45",
+          },
+          {
+            id: 3,
+            url: "https://v77.tiktokcdn.com/5h9g2g2ea2h6d2gb1d0a8e9f4g3c5d6e/6719b4a8/video/tos/useast2a/tos-useast2a-ve-0068c002/7890abcdef1234567890abcdef123456/?a=1233&ch=0&cr=0&dr=0&lr=tiktok_m&cd=0%7C0%7C0%7C0&br=2500&bt=1250&cs=0&ds=3&ft=ebA.3B3r9q8Zmo0P~O7yzz0P3p8q&mime_type=video_mp4&qs=0&rc=7890abcdef1234567890abcdef123456%3ApoZkZ2Y2OWZmaTMzNzczM0%40b2Y2OWZmaTMzNzczM0%5E7890abcdef1234567890abcdef123456&btag=80000&l=20241025120000F4A9B7C2D3E4F5A6B7C8",
+            creator: "@veganeats",
+            avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+            description: "5-minute vegan breakfast ideas #Foodie",
+            likes: 3100,
+            comments: 412,
+            duration: "0:58",
+          },
+        ];
+
+        // Handle video play/pause
+        const togglePlay = (index) => {
+          const video = videoRefs.current[index];
+          if (video) {
+            if (isPlaying) {
+              video.pause();
+            } else {
+              video.play();
+            }
+            setIsPlaying(!isPlaying);
+          }
+        };
+
+        // Handle mute/unmute
+        const toggleMute = () => {
+          videoRefs.current.forEach((video) => {
+            if (video) video.muted = !isMuted;
+          });
+          setIsMuted(!isMuted);
+        };
+
+        // Handle swipe navigation
+        const handleSwipe = (direction) => {
+          if (direction === "up" && currentIndex < videos.length - 1) {
+            videoRefs.current[currentIndex].pause();
+            setCurrentIndex(currentIndex + 1);
+            setIsPlaying(true);
+          } else if (direction === "down" && currentIndex > 0) {
+            videoRefs.current[currentIndex].pause();
+            setCurrentIndex(currentIndex - 1);
+            setIsPlaying(true);
+          }
+        };
+
+        // Touch and mouse events for swipe
+        useEffect(() => {
+          let touchStartY = 0;
+
+          const handleTouchStart = (e) => {
+            touchStartY = e.touches[0].clientY;
+          };
+
+          const handleTouchEnd = (e) => {
+            const touchEndY = e.changedTouches[0].clientY;
+            const deltaY = touchEndY - touchStartY;
+            if (deltaY > 50) handleSwipe("down");
+            if (deltaY < -50) handleSwipe("up");
+          };
+
+          const container = document.getElementById("reels-root");
+          container.addEventListener("touchstart", handleTouchStart);
+          container.addEventListener("touchend", handleTouchEnd);
+
+          return () => {
+            container.removeEventListener("touchstart", handleTouchStart);
+            container.removeEventListener("touchend", handleTouchEnd);
+          };
+        }, [currentIndex]);
+
+        // Play current video
+        useEffect(() => {
+          videoRefs.current.forEach((video, index) => {
+            if (video) {
+              video.muted = isMuted;
+              if (index === currentIndex) {
+                video.play().catch(() => {});
+              } else {
+                video.pause();
+                video.currentTime = 0;
+              }
+            }
+          });
+        }, [currentIndex, isMuted]);
+
+        return (
+          <div className="relative w-full h-full">
+            {videos.map((video, index) => (
+              <div
+                key={video.id}
+                className="video-wrapper"
+                style={{
+                  transform: `translateY(${(index - currentIndex) * 100}%)`,
+                }}
+              >
+                <video
+                  ref={(el) => (videoRefs.current[index] = el)}
+                  className="video-player"
+                  src={video.url}
+                  loop
+                  playsInline
+                  onClick={() => togglePlay(index)}
+                />
+                <div className="video-overlay">
+                  <div className="flex items-center mb-2">
+                    <img
+                      src={video.avatar}
+                      alt={video.creator}
+                      className="w-8 h-8 rounded-full mr-2"
+                    />
+                    <span className="font-medium">{video.creator}</span>
+                  </div>
+                  <p className="text-sm">{video.description}</p>
+                </div>
+                <div className="video-controls">
+                  <div></div>
+                  <div className="side-buttons">
+                    <div className="side-button">
+                      <i className="far fa-heart"></i>
+                      <span>{video.likes.toLocaleString()}</span>
+                    </div>
+                    <div className="side-button">
+                      <i className="far fa-comment"></i>
+                      <span>{video.comments.toLocaleString()}</span>
+                    </div>
+                    <div className="side-button">
+                      <i className="fas fa-share"></i>
+                      <span>Share</span>
+                    </div>
+                    <div className="control-button" onClick={toggleMute}>
+                      <i
+                        className={
+                          isMuted ? "fas fa-volume-mute" : "fas fa-volume-up"
+                        }
+                      ></i>
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">
+                  {video.duration}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      };
+
+      // Render the React component
+      ReactDOM.render(<ReelsApp />, document.getElementById("reels-root"));
+    </script>
+  </body>
+</html>

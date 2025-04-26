@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VibeZone | Messages</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.5/dist/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.5/babel.min.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #fafafa;
+      }
+
+      .gradient-text {
+        background: linear-gradient(
+          90deg,
+          #ff9a8b 0%,
+          #ff6b95 50%,
+          #ff8e53 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .chat-container {
+        height: calc(100vh - 4rem);
+        display: flex;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      .contact-list {
+        width: 33%;
+        background: white;
+        border-right: 1px solid #e5e7eb;
+        overflow-y: auto;
+      }
+
+      .contact-item {
+        transition: background-color 0.2s ease;
+      }
+
+      .contact-item:hover {
+        background-color: #f3f4f6;
+      }
+
+      .chat-window {
+        width: 67%;
+        background: white;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .message-bubble {
+        max-width: 70%;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        margin: 0.5rem;
+      }
+
+      .message-bubble.sent {
+        background: linear-gradient(45deg, #ff6b95, #ff8e53);
+        color: white;
+        margin-left: auto;
+        border-bottom-right-radius: 0;
+      }
+
+      .message-bubble.received {
+        background: #e5e7eb;
+        color: #111827;
+        margin-right: auto;
+        border-bottom-left-radius: 0;
+      }
+
+      .chat-input {
+        border-top: 1px solid #e5e7eb;
+        padding: 1rem;
+        background: white;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 flex items-center">
+              <i class="fas fa-fire text-2xl gradient-text"></i>
+              <span class="ml-2 text-xl font-bold gradient-text">VibeZone</span>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <div class="hidden md:ml-6 md:flex md:space-x-8">
+              <a
+                href="index.html"
+                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >Home</a
+              >
+              <a
+                href="#"
+                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >Explore</a
+              >
+              <a
+                href="#"
+                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >Reels</a
+              >
+              <a
+                href="messages.html"
+                class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >Messages</a
+              >
+            </div>
+          </div>
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <button
+                type="button"
+                class="relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-500 to-orange-500 shadow-sm hover:from-pink-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <span>Create Post</span>
+              </button>
+            </div>
+            <div class="ml-4 flex items-center md:ml-6">
+              <button
+                type="button"
+                class="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <span class="sr-only">View notifications</span>
+                <i class="far fa-bell text-xl"></i>
+              </button>
+              <div class="ml-3 relative">
+                <div>
+                  <button
+                    type="button"
+                    class="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    id="user-menu-button"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                  >
+                    <span class="sr-only">Open user menu</span>
+                    <img
+                      class="h-8 w-8 rounded-full"
+                      src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      alt=""
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Messages Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">💬 Messages</h2>
+      <div id="chat-root" class="chat-container"></div>
+    </div>
+
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+
+      const ChatApp = () => {
+        const [selectedContact, setSelectedContact] = useState(null);
+        const [messages, setMessages] = useState({});
+        const [newMessage, setNewMessage] = useState("");
+        const [socket, setSocket] = useState(null);
+
+        // Mock contacts
+        const contacts = [
+          {
+            id: 1,
+            username: "@cryptoqueen",
+            avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+            lastMessage: "Hey, check out my new NFT!",
+          },
+          {
+            id: 2,
+            username: "@beatsmith",
+            avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+            lastMessage: "Dropping a new track soon!",
+          },
+          {
+            id: 3,
+            username: "@veganeats",
+            avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+            lastMessage: "Try this vegan recipe!",
+          },
+          {
+            id: 4,
+            username: "@changemaker",
+            avatar: "https://randomuser.me/api/portraits/men/75.jpg",
+            lastMessage: "Join the climate march?",
+          },
+        ];
+
+        // Initialize Socket.IO
+        useEffect(() => {
+          const socketInstance = io("http://localhost:3000"); // Replace with your server URL
+          setSocket(socketInstance);
+
+          socketInstance.on("receiveMessage", ({ from, text, timestamp }) => {
+            setMessages((prev) => ({
+              ...prev,
+              [from]: [
+                ...(prev[from] || []),
+                { text, sender: from, timestamp },
+              ],
+            }));
+          });
+
+          return () => socketInstance.disconnect();
+        }, []);
+
+        // Handle sending messages
+        const sendMessage = () => {
+          if (newMessage.trim() && selectedContact && socket) {
+            const timestamp = new Date().toISOString();
+            socket.emit("sendMessage", {
+              to: selectedContact.username,
+              text: newMessage,
+              timestamp,
+            });
+
+            setMessages((prev) => ({
+              ...prev,
+              [selectedContact.username]: [
+                ...(prev[selectedContact.username] || []),
+                { text: newMessage, sender: "me", timestamp },
+              ],
+            }));
+
+            setNewMessage("");
+          }
+        };
+
+        // Handle key press for sending messages
+        const handleKeyPress = (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        };
+
+        return (
+          <div className="flex w-full">
+            {/* Contact List */}
+            <div className="contact-list">
+              {contacts.map((contact) => (
+                <div
+                  key={contact.id}
+                  className={`contact-item p-4 cursor-pointer flex items-center ${
+                    selectedContact?.id === contact.id ? "bg-gray-100" : ""
+                  }`}
+                  onClick={() => setSelectedContact(contact)}
+                >
+                  <img
+                    src={contact.avatar}
+                    alt={contact.username}
+                    className="w-10 h-10 rounded-full mr-3"
+                  />
+                  <div>
+                    <h3 className="font-medium">{contact.username}</h3>
+                    <p className="text-sm text-gray-500 truncate">
+                      {contact.lastMessage}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Chat Window */}
+            <div className="chat-window">
+              {selectedContact ? (
+                <>
+                  <div className="p-4 border-b border-gray-200 flex items-center">
+                    <img
+                      src={selectedContact.avatar}
+                      alt={selectedContact.username}
+                      className="w-8 h-8 rounded-full mr-3"
+                    />
+                    <h3 className="font-semibold">
+                      {selectedContact.username}
+                    </h3>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4">
+                    {(messages[selectedContact.username] || []).map(
+                      (msg, index) => (
+                        <div
+                          key={index}
+                          className={`message-bubble ${
+                            msg.sender === "me" ? "sent" : "received"
+                          }`}
+                        >
+                          <p>{msg.text}</p>
+                          <p className="text-xs opacity-70 mt-1">
+                            {new Date(msg.timestamp).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                      )
+                    )}
+                  </div>
+                  <div className="chat-input">
+                    <div className="flex items-center">
+                      <textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type a message..."
+                        className="flex-1 p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
+                        rows="2"
+                      ></textarea>
+                      <button
+                        onClick={sendMessage}
+                        className="ml-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded-lg hover:from-pink-600 hover:to-orange-600"
+                      >
+                        <i className="fas fa-paper-plane"></i>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-gray-500">
+                    Select a contact to start chatting
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      // Render the React component
+      ReactDOM.render(<ChatApp />, document.getElementById("chat-root"));
+    </script>
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+
+      const ChatApp = () => {
+        const [selectedContact, setSelectedContact] = useState(null);
+        const [messages, setMessages] = useState({});
+        const [newMessage, setNewMessage] = useState("");
+        const [socket, setSocket] = useState(null);
+        const [contacts, setContacts] = useState([]);
+
+        useEffect(() => {
+          // Fetch contacts
+          fetch("http://localhost:3000/api/auth/users")
+            .then((res) => res.json())
+            .then((data) => setContacts(data))
+            .catch((err) => console.error(err));
+
+          // Initialize Socket.IO
+          const socketInstance = io("http://localhost:3000");
+          socketInstance.userId = 1; // Replace with actual user ID from auth
+          setSocket(socketInstance);
+
+          socketInstance.on("receiveMessage", ({ from, text, timestamp }) => {
+            setMessages((prev) => ({
+              ...prev,
+              [from]: [
+                ...(prev[from] || []),
+                { text, sender: from, timestamp },
+              ],
+            }));
+          });
+
+          return () => socketInstance.disconnect();
+        }, []);
+
+        useEffect(() => {
+          if (selectedContact) {
+            fetch(
+              `http://localhost:3000/api/messages?receiverId=${selectedContact.id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            )
+              .then((res) => res.json())
+              .then((data) =>
+                setMessages((prev) => ({
+                  ...prev,
+                  [selectedContact.username]: data,
+                }))
+              )
+              .catch((err) => console.error(err));
+          }
+        }, [selectedContact]);
+
+        const sendMessage = () => {
+          if (newMessage.trim() && selectedContact && socket) {
+            const timestamp = new Date().toISOString();
+            socket.emit("sendMessage", {
+              to: selectedContact.username,
+              text: newMessage,
+              timestamp,
+            });
+            setMessages((prev) => ({
+              ...prev,
+              [selectedContact.username]: [
+                ...(prev[selectedContact.username] || []),
+                { text: newMessage, sender: "me", timestamp },
+              ],
+            }));
+            setNewMessage("");
+          }
+        };
+
+        const handleKeyPress = (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        };
+
+        return (
+          <div className="flex w-full">
+            <div className="contact-list">
+              {contacts.map((contact) => (
+                <div
+                  key={contact.id}
+                  className={`contact-item p-4 cursor-pointer flex items-center ${
+                    selectedContact?.id === contact.id ? "bg-gray-100" : ""
+                  }`}
+                  onClick={() => setSelectedContact(contact)}
+                >
+                  <img
+                    src="https://randomuser.me/api/portraits/women/44.jpg"
+                    alt={contact.username}
+                    className="w-10 h-10 rounded-full mr-3"
+                  />
+                  <div>
+                    <h3 className="font-medium">{contact.username}</h3>
+                    <p className="text-sm text-gray-500 truncate">
+                      Click to chat
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="chat-window">
+              {selectedContact ? (
+                <>
+                  <div className="p-4 border-b border-gray-200 flex items-center">
+                    <img
+                      src="https://randomuser.me/api/portraits/women/44.jpg"
+                      alt={selectedContact.username}
+                      className="w-8 h-8 rounded-full mr-3"
+                    />
+                    <h3 className="font-semibold">
+                      {selectedContact.username}
+                    </h3>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4">
+                    {(messages[selectedContact.username] || []).map(
+                      (msg, index) => (
+                        <div
+                          key={index}
+                          className={`message-bubble ${
+                            msg.sender === "me" ? "sent" : "received"
+                          }`}
+                        >
+                          <p>{msg.text}</p>
+                          <p className="text-xs opacity-70 mt-1">
+                            {new Date(msg.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      )
+                    )}
+                  </div>
+                  <div className="chat-input">
+                    <div className="flex items-center">
+                      <textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type a message..."
+                        className="flex-1 p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
+                        rows="2"
+                      ></textarea>
+                      <button
+                        onClick={sendMessage}
+                        className="ml-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded-lg hover:from-pink-600 hover:to-orange-600"
+                      >
+                        <i className="fas fa-paper-plane"></i>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-gray-500">
+                    Select a contact to start chatting
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      ReactDOM.render(<ChatApp />, document.getElementById("chat-root"));
+    </script>
+  </body>
+</html>
