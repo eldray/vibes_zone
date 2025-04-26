@@ -36,3 +36,12 @@ exports.login = (req, res) => {
     res.json({ token, user: { id: user.id, username } });
   });
 };
+
+exports.socialCallback = (req, res) => {
+  const token = jwt.sign(
+    { id: req.user.id, username: req.user.username },
+    process.env.JWT_SECRET,
+    { expiresIn: "24h" }
+  );
+  res.redirect(`http://localhost:3000/index.html?token=${token}`);
+};

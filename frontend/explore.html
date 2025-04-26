@@ -1,0 +1,533 @@
+<!-- Search and Filter Section -->
+<div class="mb-8">
+  <div
+    class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+  >
+    <div class="relative flex-1">
+      <div
+        class="search-bar absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+      >
+        <i class="fas fa-search text-gray-400"></i>
+      </div>
+      <input
+        type="text"
+        class="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-full bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+        placeholder="Search vibes, hashtags, people..."
+      />
+      <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+        <button
+          type="button"
+          class="filter-btn p-1 rounded-full text-gray-400 hover:text-pink-500 focus:outline-none"
+        >
+          <i class="fas fa-sliders-h"></i>
+        </button>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <span class="text-sm font-medium text-gray-500">Sort by:</span>
+      <select
+        class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 rounded-full bg-white shadow-sm"
+      >
+        <option>Trending</option>
+        <option>Newest</option>
+        <option>Most Liked</option>
+        <option>Near You</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Trending Now Section -->
+<div class="mb-10">
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center space-x-3">
+      <h2 class="text-2xl font-bold text-gray-900">🔥 Trending Now</h2>
+      <span
+        class="trending-pill px-3 py-1 bg-pink-100 text-pink-600 text-xs font-bold rounded-full"
+        >LIVE</span
+      >
+    </div>
+    <a
+      href="#"
+      class="text-sm font-medium text-pink-500 hover:text-pink-600 flex items-center"
+    >
+      See all <i class="fas fa-chevron-right ml-1 text-xs"></i>
+    </a>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</div>
+
+<!-- Categories Section -->
+<div class="mb-10">
+  <h2 class="text-2xl font-bold text-gray-900 mb-6">✨ Categories</h2>
+  <div class="flex flex-wrap gap-3">
+    <button
+      class="category-chip active px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium"
+    >
+      All
+    </button>
+    <button
+      class="category-chip px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium"
+    >
+      <i class="fas fa-music mr-1 text-purple-500"></i> Music
+    </button>
+    <button
+      class="category-chip px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium"
+    >
+      <i class="fas fa-paint-brush mr-1 text-pink-500"></i> Art
+    </button>
+    <button
+      class="category-chip px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium"
+    >
+      <i class="fas fa-utensils mr-1 text-orange-500"></i> Food
+    </button>
+    <button
+      class="category-chip px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium"
+    >
+      <i class="fas fa-globe mr-1 text-blue-500"></i> Activism
+    </button>
+    <button
+      class="category-chip px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium"
+    >
+      <i class="fas fa-gamepad mr-1 text-green-500"></i> Gaming
+    </button>
+    <button
+      class="category-chip px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium"
+    >
+      <i class="fas fa-leaf mr-1 text-teal-500"></i> Wellness
+    </button>
+    <button
+      class="category-chip px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium"
+    >
+      <i class="fas fa-tshirt mr-1 text-yellow-500"></i> Fashion
+    </button>
+    <button
+      class="category-chip px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium"
+    >
+      <i class="fas fa-code mr-1 text-indigo-500"></i> Tech
+    </button>
+  </div>
+</div>
+
+<!-- Discover Content Section -->
+<div class="mb-10">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">🌍 Discover New Vibes</h2>
+    <div class="flex items-center space-x-2">
+      <button
+        class="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+      >
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button
+        class="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+      >
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+  >
+    <div class="explore-card bg-white rounded-lg overflow-hidden shadow-sm">
+      <img
+        class="w-full h-40 object-cover"
+        src="https://images.unsplash.com/photo-1593642632823-8f785ba67e45?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2089&q=80"
+        alt="Discover content"
+      />
+      <div class="p-3">
+        <h3 class="font-medium text-sm mb-1">Gaming Setup Tour</h3>
+        <p class="text-xs text-gray-500">@techbro • 12.3K vibes</p>
+      </div>
+    </div>
+    <div class="explore-card bg-white rounded-lg overflow-hidden shadow-sm">
+      <img
+        class="w-full h-40 object-cover"
+        src="https://images.unsplash.com/photo-1565084888279-aca607ecce0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+        alt="Discover content"
+      />
+      <div class="p-3">
+        <h3 class="font-medium text-sm mb-1">Thrift Flip Challenge</h3>
+        <p class="text-xs text-gray-500">@thriftqueen • 8.7K vibes</p>
+      </div>
+    </div>
+    <div class="explore-card bg-white rounded-lg overflow-hidden shadow-sm">
+      <img
+        class="w-full h-40 object-cover"
+        src="https://images.unsplash.com/photo-1598885155128-7aac56b7b739?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2089&q=80"
+        alt="Discover content"
+      />
+      <div class="p-3">
+        <h3 class="font-medium text-sm mb-1">Plant Care 101</h3>
+        <p class="text-xs text-gray-500">@plantmom • 5.2K vibes</p>
+      </div>
+    </div>
+    <div class="explore-card bg-white rounded-lg overflow-hidden shadow-sm">
+      <img
+        class="w-full h-40 object-cover"
+        src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+        alt="Discover content"
+      />
+      <div class="p-3">
+        <h3 class="font-medium text-sm mb-1">Vegan Meal Prep</h3>
+        <p class="text-xs text-gray-500">@veganeats • 7.1K vibes</p>
+      </div>
+    </div>
+    <div class="explore-card bg-white rounded-lg overflow-hidden shadow-sm">
+      <img
+        class="w-full h-40 object-cover"
+        src="https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80"
+        alt="Discover content"
+      />
+      <div class="p-3">
+        <h3 class="font-medium text-sm mb-1">AI Art Tutorial</h3>
+        <p class="text-xs text-gray-500">@cryptoqueen • 9.8K vibes</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Trending Hashtags Section -->
+<div class="mb-10">
+  <h2 class="text-2xl font-bold text-gray-900 mb-6"># Trending Hashtags</h2>
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+      <div class="flex items-start">
+        <div class="flex-shrink-0 bg-pink-100 rounded-lg p-3 mr-4">
+          <i class="fas fa-hashtag text-pink-500 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg text-gray-900">#DigitalArtRevolution</h3>
+          <p class="text-sm text-gray-500 mb-2">
+            24.5K posts • Trending in Art
+          </p>
+          <p class="text-sm text-gray-700">
+            Exploring the intersection of technology and creativity
+          </p>
+        </div>
+      </div>
+      <div class="flex items-start">
+        <div class="flex-shrink-0 bg-blue-100 rounded-lg p-3 mr-4">
+          <i class="fas fa-hashtag text-blue-500 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg text-gray-900">#ClimateActionNow</h3>
+          <p class="text-sm text-gray-500 mb-2">
+            18.7K posts • Trending in Activism
+          </p>
+          <p class="text-sm text-gray-700">
+            Global movement for environmental justice
+          </p>
+        </div>
+      </div>
+      <div class="flex items-start">
+        <div class="flex-shrink-0 bg-purple-100 rounded-lg p-3 mr-4">
+          <i class="fas fa-hashtag text-purple-500 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg text-gray-900">#IndieMusicWave</h3>
+          <p class="text-sm text-gray-500 mb-2">
+            15.2K posts • Trending in Music
+          </p>
+          <p class="text-sm text-gray-700">
+            Supporting independent artists worldwide
+          </p>
+        </div>
+      </div>
+      <div class="flex items-start">
+        <div class="flex-shrink-0 bg-green-100 rounded-lg p-3 mr-4">
+          <i class="fas fa-hashtag text-green-500 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg text-gray-900">#ThriftFlipChallenge</h3>
+          <p class="text-sm text-gray-500 mb-2">
+            12.8K posts • Trending in Fashion
+          </p>
+          <p class="text-sm text-gray-700">
+            Sustainable fashion transformations
+          </p>
+        </div>
+      </div>
+      <div class="flex items-start">
+        <div class="flex-shrink-0 bg-orange-100 rounded-lg p-3 mr-4">
+          <i class="fas fa-hashtag text-orange-500 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg text-gray-900">#PlantParentLife</h3>
+          <p class="text-sm text-gray-500 mb-2">
+            9.6K posts • Trending in Wellness
+          </p>
+          <p class="text-sm text-gray-700">Urban jungle inspiration and tips</p>
+        </div>
+      </div>
+      <div class="flex items-start">
+        <div class="flex-shrink-0 bg-yellow-100 rounded-lg p-3 mr-4">
+          <i class="fas fa-hashtag text-yellow-500 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg text-gray-900">#PCMasterRace</h3>
+          <p class="text-sm text-gray-500 mb-2">
+            8.4K posts • Trending in Gaming
+          </p>
+          <p class="text-sm text-gray-700">Showcasing epic gaming setups</p>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-gray-200 px-6 py-4 bg-gray-50">
+      <a
+        href="#"
+        class="text-sm font-medium text-pink-500 hover:text-pink-600 flex items-center justify-center"
+      >
+        View all trending hashtags
+        <i class="fas fa-chevron-right ml-1 text-xs"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Recommended Creators -->
+<div class="mb-10">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">⭐ Recommended Creators</h2>
+    <a href="#" class="text-sm font-medium text-pink-500 hover:text-pink-600"
+      >See all</a
+    >
+  </div>
+  <div
+    class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
+  >
+    <div
+      class="bg-white rounded-xl shadow-sm overflow-hidden text-center p-4 hover:shadow-md transition-all duration-300"
+    >
+      <div class="story-ring mx-auto mb-3">
+        <div class="story-ring-inner">
+          <img
+            class="w-16 h-16 rounded-full object-cover"
+            src="https://randomuser.me/api/portraits/women/22.jpg"
+            alt="Creator"
+          />
+        </div>
+      </div>
+      <h3 class="font-bold text-gray-900">@thriftqueen</h3>
+      <p class="text-xs text-gray-500 mb-3">Sustainable Fashion</p>
+      <button
+        class="w-full py-2 bg-pink-50 text-pink-500 rounded-full text-sm font-medium hover:bg-pink-100"
+      >
+        Follow
+      </button>
+    </div>
+    <div
+      class="bg-white rounded-xl shadow-sm overflow-hidden text-center p-4 hover:shadow-md transition-all duration-300"
+    >
+      <div class="story-ring mx-auto mb-3">
+        <div class="story-ring-inner">
+          <img
+            class="w-16 h-16 rounded-full object-cover"
+            src="https://randomuser.me/api/portraits/men/45.jpg"
+            alt="Creator"
+          />
+        </div>
+      </div>
+      <h3 class="font-bold text-gray-900">@techbro</h3>
+      <p class="text-xs text-gray-500 mb-3">Tech & Gaming</p>
+      <button
+        class="w-full py-2 bg-pink-50 text-pink-500 rounded-full text-sm font-medium hover:bg-pink-100"
+      >
+        Follow
+      </button>
+    </div>
+    <div
+      class="bg-white rounded-xl shadow-sm overflow-hidden text-center p-4 hover:shadow-md transition-all duration-300"
+    >
+      <div class="story-ring mx-auto mb-3">
+        <div class="story-ring-inner">
+          <img
+            class="w-16 h-16 rounded-full object-cover"
+            src="https://randomuser.me/api/portraits/women/63.jpg"
+            alt="Creator"
+          />
+        </div>
+      </div>
+      <h3 class="font-bold text-gray-900">@plantmom</h3>
+      <p class="text-xs text-gray-500 mb-3">Plant Care</p>
+      <button
+        class="w-full py-2 bg-pink-50 text-pink-500 rounded-full text-sm font-medium hover:bg-pink-100"
+      >
+        Follow
+      </button>
+    </div>
+    <div
+      class="bg-white rounded-xl shadow-sm overflow-hidden text-center p-4 hover:shadow-md transition-all duration-300"
+    >
+      <div class="story-ring mx-auto mb-3">
+        <div class="story-ring-inner">
+          <img
+            class="w-16 h-16 rounded-full object-cover"
+            src="https://randomuser.me/api/portraits/women/68.jpg"
+            alt="Creator"
+          />
+        </div>
+      </div>
+      <h3 class="font-bold text-gray-900">@veganeats</h3>
+      <p class="text-xs text-gray-500 mb-3">Vegan Recipes</p>
+      <button
+        class="w-full py-2 bg-pink-50 text-pink-500 rounded-full text-sm font-medium hover:bg-pink-100"
+      >
+        Follow
+      </button>
+    </div>
+    <div
+      class="bg-white rounded-xl shadow-sm overflow-hidden text-center p-4 hover:shadow-md transition-all duration-300"
+    >
+      <div class="story-ring mx-auto mb-3">
+        <div class="story-ring-inner">
+          <img
+            class="w-16 h-16 rounded-full object-cover"
+            src="https://randomuser.me/api/portraits/men/32.jpg"
+            alt="Creator"
+          />
+        </div>
+      </div>
+      <h3 class="font-bold text-gray-900">@beatsmith</h3>
+      <p class="text-xs text-gray-500 mb-3">Music Producer</p>
+      <button
+        class="w-full py-2 bg-pink-50 text-pink-500 rounded-full text-sm font-medium hover:bg-pink-100"
+      >
+        Follow
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="text/babel">
+  const { useState, useEffect } = React;
+
+  const TrendingSection = () => {
+    const [posts, setPosts] = useState([]);
+
+    useEffect(() => {
+      fetch("http://localhost:3000/api/posts?sort=trending")
+        .then((res) => res.json())
+        .then((data) => setPosts(data.slice(0, 3)))
+        .catch((err) => console.error(err));
+    }, []);
+
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {posts.map((post) => (
+          <div
+            key={post.id}
+            className="explore-card bg-white rounded-xl overflow-hidden shadow-md relative"
+          >
+            <div className="trending-badge">Trending</div>
+            <img
+              className="w-full h-64 object-cover"
+              src={post.imageUrl}
+              alt="Trending content"
+            />
+            <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+              <div className="flex items-center mb-2">
+                <img
+                  className="w-8 h-8 rounded-full mr-2 border-2 border-white"
+                  src="https://randomuser.me/api/portraits/women/44.jpg"
+                  alt="User"
+                />
+                <span className="text-white font-medium">{post.username}</span>
+              </div>
+              <h3 className="text-white font-bold text-lg mb-1">
+                {post.content}
+              </h3>
+              <div className="flex justify-between text-xs text-white">
+                <span>
+                  <i className="fas fa-heart mr-1"></i> {post.likes}
+                </span>
+                <span>
+                  <i className="fas fa-comment mr-1"></i> {post.comments}
+                </span>
+                <span>
+                  <i className="fas fa-share mr-1"></i> 0
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  ReactDOM.render(
+    <TrendingSection />,
+    document.querySelector(
+      "#content .grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.gap-6"
+    )
+  );
+
+  // Original explore.js logic
+  document.addEventListener("DOMContentLoaded", function () {
+    const carouselItems = document.querySelectorAll(".carousel-item");
+    const indicators = document.querySelectorAll(".carousel-indicator");
+    let currentIndex = 0;
+
+    function showSlide(index) {
+      carouselItems.forEach((item) => item.classList.remove("active"));
+      indicators.forEach((indicator) =>
+        indicator.classList.remove("bg-white", "opacity-100")
+      );
+      carouselItems[index].classList.add("active");
+      indicators[index].classList.add("bg-white", "opacity-100");
+      currentIndex = index;
+    }
+
+    if (carouselItems.length > 0) {
+      showSlide(0);
+      let interval = setInterval(() => {
+        let nextIndex = (currentIndex + 1) % carouselItems.length;
+        showSlide(nextIndex);
+      }, 5000);
+
+      indicators.forEach((indicator) => {
+        indicator.addEventListener("click", function () {
+          clearInterval(interval);
+          const index = parseInt(this.getAttribute("data-index"));
+          showSlide(index);
+          interval = setInterval(() => {
+            let nextIndex = (currentIndex + 1) % carouselItems.length;
+            showSlide(nextIndex);
+          }, 5000);
+        });
+      });
+    }
+
+    const videoCards = document.querySelectorAll(".video-card");
+    videoCards.forEach((card) => {
+      card.addEventListener("mouseenter", function () {
+        this.querySelector(".play-button").style.transform = "scale(1.1)";
+        this.querySelector(".play-button").style.opacity = "0.9";
+      });
+      card.addEventListener("mouseleave", function () {
+        this.querySelector(".play-button").style.transform = "scale(1)";
+        this.querySelector(".play-button").style.opacity = "1";
+      });
+    });
+
+    const categoryChips = document.querySelectorAll(".category-chip");
+    categoryChips.forEach((chip) => {
+      chip.addEventListener("click", function () {
+        categoryChips.forEach((c) => c.classList.remove("active"));
+        this.classList.add("active");
+      });
+    });
+
+    const exploreCards = document.querySelectorAll(".explore-card");
+    exploreCards.forEach((card) => {
+      card.addEventListener("mouseenter", function () {
+        this.style.transform = "scale(1.02)";
+        this.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+      });
+      card.addEventListener("mouseleave", function () {
+        this.style.transform = "scale(1)";
+        this.style.boxShadow = "";
+      });
+    });
+  });
+</script>
