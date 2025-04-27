@@ -53,6 +53,8 @@ app.use("/api/stories", require("./routes/stories"));
 app.use("/api/hashtags", require("./routes/hashtags"));
 app.use("/api/notifications", require("./routes/notifications"));
 app.use("/api/users", require("./routes/users"));
+app.use("/api/live", require("./routes/live"));
+app.use("/api/events", require("./routes/events"));
 
 // Socket.IO
 chatSocket(io);

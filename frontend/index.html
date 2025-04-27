@@ -3,12 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VibeZone | For The Culture</title>
+    <title>VibeZone</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.5/babel.min.js"></script>
+    <script src="https://cdn.socket.io/4.8.0/socket.io.min.js"></script>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
@@ -27,6 +31,29 @@
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
+      }
+
+      .floating-action-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #ff6b95, #ff8e53);
+        box-shadow: 0 4px 15px rgba(255, 107, 149, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        z-index: 50;
+        transition: all 0.3s ease;
+      }
+
+      .floating-action-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(255, 107, 149, 0.6);
       }
 
       .carousel-item {
@@ -56,11 +83,11 @@
 
       .video-scroll-container {
         -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; /* Firefox */
+        scrollbar-width: none;
       }
 
       .video-scroll-container::-webkit-scrollbar {
-        display: none; /* Safari and Chrome */
+        display: none;
       }
 
       .video-card {
@@ -96,27 +123,92 @@
         border-radius: 50%;
       }
 
-      .floating-action-btn {
-        position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: linear-gradient(45deg, #ff6b95, #ff8e53);
-        box-shadow: 0 4px 15px rgba(255, 107, 149, 0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.5rem;
-        z-index: 50;
+      .category-chip {
         transition: all 0.3s ease;
       }
 
-      .floating-action-btn:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 20px rgba(255, 107, 149, 0.6);
+      .category-chip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .category-chip.active {
+        background: linear-gradient(45deg, #ff6b95, #ff8e53);
+        color: white;
+      }
+
+      .explore-card {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .explore-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      .explore-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.7) 0%,
+          rgba(0, 0, 0, 0) 50%
+        );
+        z-index: 1;
+      }
+
+      .trending-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: linear-gradient(45deg, #ff6b95, #ff8e53);
+        color: white;
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 20px;
+        z-index: 2;
+      }
+
+      .search-bar {
+        transition: all 0.3s ease;
+      }
+
+      .search-bar:focus-within {
+        box-shadow: 0 0 0 3px rgba(255, 107, 149, 0.3);
+      }
+
+      .filter-btn {
+        transition: all 0.3s ease;
+      }
+
+      .filter-btn:hover {
+        background-color: rgba(255, 107, 149, 0.1);
+      }
+
+      .trending-pill {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(255, 107, 149, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(255, 107, 149, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(255, 107, 149, 0);
+        }
+      }
+
+      .dropdown-menu {
+        transition: all 0.3s ease;
       }
     </style>
   </head>
@@ -134,45 +226,59 @@
           <div class="flex items-center">
             <div class="hidden md:ml-6 md:flex md:space-x-8">
               <a
-                href="#"
-                class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                href="?page=home"
+                class="nav-link border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                data-page="home"
                 >Home</a
               >
               <a
-                href="#"
-                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                href="?page=explore"
+                class="nav-link border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                data-page="explore"
                 >Explore</a
               >
               <a
-                href="#"
-                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                href="?page=reels"
+                class="nav-link border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                data-page="reels"
                 >Reels</a
               >
               <a
-                href="#"
-                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                href="?page=messages"
+                class="nav-link border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                data-page="messages"
                 >Messages</a
               >
               <a
-                href="auth.html"
-                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >Login/Signup</a
+                href="?page=notifications"
+                class="nav-link border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                data-page="notifications"
+                >Notifications</a
+              >
+              <a
+                href="?page=profile"
+                class="nav-link border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                data-page="profile"
+                >Profile</a
               >
             </div>
           </div>
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <button
+                id="create-post-btn"
                 type="button"
                 class="relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-500 to-orange-500 shadow-sm hover:from-pink-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                onclick="handleCreateContent()"
               >
-                <span>Create Post</span>
+                <span>Create</span>
               </button>
             </div>
             <div class="ml-4 flex items-center md:ml-6">
               <button
                 type="button"
                 class="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                onclick="handleNotifications()"
               >
                 <span class="sr-only">View notifications</span>
                 <i class="far fa-bell text-xl"></i>
@@ -183,16 +289,41 @@
                     type="button"
                     class="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     id="user-menu-button"
-                    aria-expanded="false"
-                    aria-haspopup="true"
+                    onclick="handleAvatarClick()"
                   >
                     <span class="sr-only">Open user menu</span>
+                    <span
+                      id="user-display-name"
+                      class="text-gray-700 font-medium"
+                    ></span>
                     <img
-                      class="h-8 w-8 rounded-full"
+                      id="user-avatar"
+                      class="h-8 w-8 rounded-full ml-2"
                       src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                       alt=""
                     />
                   </button>
+                </div>
+                <div
+                  id="user-menu"
+                  class="dropdown-menu hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="user-menu-button"
+                >
+                  <a
+                    href="?page=profile"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    >Your Profile</a
+                  >
+                  <a
+                    href="#"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onclick="logout()"
+                    >Sign out</a
+                  >
                 </div>
               </div>
             </div>
@@ -201,827 +332,144 @@
       </div>
     </nav>
 
-    <!-- Stories -->
-    <div class="bg-white py-4 px-4 shadow-sm">
-      <div class="max-w-7xl mx-auto">
-        <div class="flex space-x-4 overflow-x-auto pb-2">
-          <!-- Your Story -->
-          <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-            <div class="story-ring">
-              <div class="story-ring-inner">
-                <img
-                  class="w-16 h-16 rounded-full object-cover"
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  alt="Your story"
-                />
-              </div>
-            </div>
-            <span class="text-xs">Your Story</span>
-          </div>
-
-          <!-- Friend Stories -->
-          <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-            <div class="story-ring">
-              <div class="story-ring-inner">
-                <img
-                  class="w-16 h-16 rounded-full object-cover"
-                  src="https://randomuser.me/api/portraits/women/44.jpg"
-                  alt="Friend story"
-                />
-              </div>
-            </div>
-            <span class="text-xs">@cryptoqueen</span>
-          </div>
-
-          <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-            <div class="story-ring">
-              <div class="story-ring-inner">
-                <img
-                  class="w-16 h-16 rounded-full object-cover"
-                  src="https://randomuser.me/api/portraits/men/32.jpg"
-                  alt="Friend story"
-                />
-              </div>
-            </div>
-            <span class="text-xs">@beatsmith</span>
-          </div>
-
-          <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-            <div class="story-ring">
-              <div class="story-ring-inner">
-                <img
-                  class="w-16 h-16 rounded-full object-cover"
-                  src="https://randomuser.me/api/portraits/women/68.jpg"
-                  alt="Friend story"
-                />
-              </div>
-            </div>
-            <span class="text-xs">@veganeats</span>
-          </div>
-
-          <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-            <div class="story-ring">
-              <div class="story-ring-inner">
-                <img
-                  class="w-16 h-16 rounded-full object-cover"
-                  src="https://randomuser.me/api/portraits/men/75.jpg"
-                  alt="Friend story"
-                />
-              </div>
-            </div>
-            <span class="text-xs">@changemaker</span>
-          </div>
-
-          <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-            <div class="story-ring">
-              <div class="story-ring-inner">
-                <img
-                  class="w-16 h-16 rounded-full object-cover"
-                  src="https://randomuser.me/api/portraits/women/22.jpg"
-                  alt="Friend story"
-                />
-              </div>
-            </div>
-            <span class="text-xs">@thriftqueen</span>
-          </div>
-
-          <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-            <div class="story-ring">
-              <div class="story-ring-inner">
-                <img
-                  class="w-16 h-16 rounded-full object-cover"
-                  src="https://randomuser.me/api/portraits/men/45.jpg"
-                  alt="Friend story"
-                />
-              </div>
-            </div>
-            <span class="text-xs">@techbro</span>
-          </div>
-
-          <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-            <div class="story-ring">
-              <div class="story-ring-inner">
-                <img
-                  class="w-16 h-16 rounded-full object-cover"
-                  src="https://randomuser.me/api/portraits/women/63.jpg"
-                  alt="Friend story"
-                />
-              </div>
-            </div>
-            <span class="text-xs">@plantmom</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Hero Carousel -->
-    <div class="relative overflow-hidden bg-gray-900 h-96">
-      <div class="relative h-full">
-        <!-- Carousel items -->
-        <div class="carousel-item active h-full w-full">
-          <img
-            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1964&q=80"
-            alt="Gen Z hanging out"
-            class="w-full h-full object-cover opacity-70"
-          />
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="text-center px-4">
-              <h1 class="text-4xl md:text-6xl font-bold text-white mb-4">
-                Your Vibe <span class="gradient-text">Attracts Your Tribe</span>
-              </h1>
-              <p class="text-xl text-gray-200 max-w-2xl mx-auto">
-                Connect with people who get you. Share your passions, discover
-                new ones, and vibe together.
-              </p>
-              <button
-                class="mt-6 px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105"
-              >
-                Join The Movement
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="carousel-item h-full w-full">
-          <img
-            src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-            alt="Music festival"
-            class="w-full h-full object-cover opacity-70"
-          />
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="text-center px-4">
-              <h1 class="text-4xl md:text-6xl font-bold text-white mb-4">
-                Create <span class="gradient-text">Your Wave</span>
-              </h1>
-              <p class="text-xl text-gray-200 max-w-2xl mx-auto">
-                Express yourself freely. No filters, no fakes. Just real
-                connections with real people.
-              </p>
-              <button
-                class="mt-6 px-8 py-3 bg-gradient-to-r from-blue-500 to-teal-400 text-white font-bold rounded-full hover:from-blue-600 hover:to-teal-500 transition-all duration-300 transform hover:scale-105"
-              >
-                Start Creating
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="carousel-item h-full w-full">
-          <img
-            src="https://images.unsplash.com/photo-1529333164857-423262e69c4a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80"
-            alt="Street fashion"
-            class="w-full h-full object-cover opacity-70"
-          />
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="text-center px-4">
-              <h1 class="text-4xl md:text-6xl font-bold text-white mb-4">
-                Stay <span class="gradient-text">Woke</span>
-              </h1>
-              <p class="text-xl text-gray-200 max-w-2xl mx-auto">
-                Be part of the conversation that matters. From social justice to
-                climate action - your voice counts.
-              </p>
-              <button
-                class="mt-6 px-8 py-3 bg-gradient-to-r from-green-400 to-yellow-400 text-white font-bold rounded-full hover:from-green-500 hover:to-yellow-500 transition-all duration-300 transform hover:scale-105"
-              >
-                Get Involved
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Carousel indicators -->
-        <div
-          class="absolute bottom-6 left-0 right-0 flex justify-center space-x-2"
-        >
+    <!-- Create Content Modal -->
+    <div
+      id="create-content-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+    >
+      <div class="bg-white rounded-xl p-6 w-full max-w-md">
+        <h3 class="text-lg font-semibold mb-4">Create Content</h3>
+        <div class="flex justify-around mb-4">
           <button
-            class="carousel-indicator w-3 h-3 rounded-full bg-white opacity-50 focus:outline-none"
-            data-index="0"
-          ></button>
+            class="content-type-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            data-type="post"
+            onclick="selectContentType('post')"
+          >
+            Post
+          </button>
           <button
-            class="carousel-indicator w-3 h-3 rounded-full bg-white opacity-50 focus:outline-none"
-            data-index="1"
-          ></button>
+            class="content-type-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            data-type="story"
+            onclick="selectContentType('story')"
+          >
+            Story
+          </button>
           <button
-            class="carousel-indicator w-3 h-3 rounded-full bg-white opacity-50 focus:outline-none"
-            data-index="2"
-          ></button>
+            class="content-type-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            data-type="reel"
+            onclick="selectContentType('reel')"
+          >
+            Reel
+          </button>
         </div>
+        <form id="create-content-form">
+          <div id="post-fields" class="content-fields">
+            <div class="mb-4">
+              <textarea
+                id="post-content"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="What's the vibe today?"
+                rows="4"
+                required
+              ></textarea>
+            </div>
+            <div class="mb-4">
+              <input
+                type="text"
+                id="post-hashtags"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="Add hashtags (e.g., #VibeZone #Fun)"
+              />
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-medium mb-1"
+                >Upload Image</label
+              >
+              <input
+                type="file"
+                id="post-image"
+                accept="image/*"
+                class="w-full p-2 border rounded"
+              />
+            </div>
+          </div>
+          <div id="story-fields" class="content-fields hidden">
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-medium mb-1"
+                >Upload Story (Image/Video)</label
+              >
+              <input
+                type="file"
+                id="story-media"
+                accept="image/*,video/*"
+                class="w-full p-2 border rounded"
+                required
+              />
+            </div>
+          </div>
+          <div id="reel-fields" class="content-fields hidden">
+            <div class="mb-4">
+              <textarea
+                id="reel-description"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="Describe your reel"
+                rows="4"
+              ></textarea>
+            </div>
+            <div class="mb-4">
+              <input
+                type="text"
+                id="reel-hashtags"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="Add hashtags (e.g., #VibeZone #Reels)"
+              />
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-medium mb-1"
+                >Upload Video</label
+              >
+              <input
+                type="file"
+                id="reel-video"
+                accept="video/*"
+                class="w-full p-2 border rounded"
+                required
+              />
+            </div>
+          </div>
+          <div class="flex justify-end space-x-2">
+            <button
+              type="button"
+              class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              onclick="closeCreateContentModal()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded-lg hover:from-pink-600 hover:to-orange-600"
+            >
+              Create
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <!-- Trending Section -->
-      <div class="mb-12">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">🔥 Trending Now</h2>
-          <a
-            href="#"
-            class="text-sm font-medium text-pink-500 hover:text-pink-600"
-            >See all</a
-          >
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <!-- Trending Card 1 -->
-          <div
-            class="bg-white rounded-xl shadow-md overflow-hidden trending-card transition-all duration-300"
-          >
-            <div class="relative h-48">
-              <img
-                class="w-full h-full object-cover"
-                src="https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80"
-                alt="NFT art"
-              />
-              <div
-                class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full"
-              >
-                #DigitalArt
-              </div>
-            </div>
-            <div class="p-4">
-              <div class="flex items-center mb-2">
-                <img
-                  class="w-8 h-8 rounded-full mr-2"
-                  src="https://randomuser.me/api/portraits/women/44.jpg"
-                  alt="User"
-                />
-                <span class="text-sm font-medium">@cryptoqueen</span>
-              </div>
-              <h3 class="text-lg font-semibold mb-2">
-                My new NFT collection drops tomorrow!
-              </h3>
-              <div class="flex justify-between text-sm text-gray-500">
-                <span><i class="far fa-heart mr-1"></i> 2.4K</span>
-                <span><i class="far fa-comment mr-1"></i> 328</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Trending Card 2 -->
-          <div
-            class="bg-white rounded-xl shadow-md overflow-hidden trending-card transition-all duration-300"
-          >
-            <div class="relative h-48">
-              <img
-                class="w-full h-full object-cover"
-                src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-                alt="Music studio"
-              />
-              <div
-                class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full"
-              >
-                #Music
-              </div>
-            </div>
-            <div class="p-4">
-              <div class="flex items-center mb-2">
-                <img
-                  class="w-8 h-8 rounded-full mr-2"
-                  src="https://randomuser.me/api/portraits/men/32.jpg"
-                  alt="User"
-                />
-                <span class="text-sm font-medium">@beatsmith</span>
-              </div>
-              <h3 class="text-lg font-semibold mb-2">
-                Just dropped my new EP - link in bio!
-              </h3>
-              <div class="flex justify-between text-sm text-gray-500">
-                <span><i class="far fa-heart mr-1"></i> 5.7K</span>
-                <span><i class="far fa-comment mr-1"></i> 892</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Trending Card 3 -->
-          <div
-            class="bg-white rounded-xl shadow-md overflow-hidden trending-card transition-all duration-300"
-          >
-            <div class="relative h-48">
-              <img
-                class="w-full h-full object-cover"
-                src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-                alt="Food"
-              />
-              <div
-                class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full"
-              >
-                #Foodie
-              </div>
-            </div>
-            <div class="p-4">
-              <div class="flex items-center mb-2">
-                <img
-                  class="w-8 h-8 rounded-full mr-2"
-                  src="https://randomuser.me/api/portraits/women/68.jpg"
-                  alt="User"
-                />
-                <span class="text-sm font-medium">@veganeats</span>
-              </div>
-              <h3 class="text-lg font-semibold mb-2">
-                Easy 10-min vegan pasta recipe 🍝
-              </h3>
-              <div class="flex justify-between text-sm text-gray-500">
-                <span><i class="far fa-heart mr-1"></i> 3.1K</span>
-                <span><i class="far fa-comment mr-1"></i> 412</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Trending Card 4 -->
-          <div
-            class="bg-white rounded-xl shadow-md overflow-hidden trending-card transition-all duration-300"
-          >
-            <div class="relative h-48">
-              <img
-                class="w-full h-full object-cover"
-                src="https://images.unsplash.com/photo-1541534741688-6078c5200f81?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80"
-                alt="Protest"
-              />
-              <div
-                class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full"
-              >
-                #Activism
-              </div>
-            </div>
-            <div class="p-4">
-              <div class="flex items-center mb-2">
-                <img
-                  class="w-8 h-8 rounded-full mr-2"
-                  src="https://randomuser.me/api/portraits/men/75.jpg"
-                  alt="User"
-                />
-                <span class="text-sm font-medium">@changemaker</span>
-              </div>
-              <h3 class="text-lg font-semibold mb-2">
-                March for climate justice this Friday
-              </h3>
-              <div class="flex justify-between text-sm text-gray-500">
-                <span><i class="far fa-heart mr-1"></i> 8.2K</span>
-                <span><i class="far fa-comment mr-1"></i> 1.3K</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- For You Section -->
-      <div class="mb-12">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">✨ For You</h2>
-          <div class="flex space-x-2">
-            <button
-              class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium"
-            >
-              All
-            </button>
-            <button
-              class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium"
-            >
-              Following
-            </button>
-            <button
-              class="px-3 py-1 bg-pink-500 text-white rounded-full text-sm font-medium"
-            >
-              Suggested
-            </button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <!-- Post 1 -->
-          <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="p-4">
-              <div class="flex items-center mb-4">
-                <img
-                  class="w-10 h-10 rounded-full mr-3"
-                  src="https://randomuser.me/api/portraits/women/22.jpg"
-                  alt="User"
-                />
-                <div>
-                  <h4 class="font-medium">@thriftqueen</h4>
-                  <p class="text-xs text-gray-500">2h ago</p>
-                </div>
-              </div>
-              <p class="mb-4">
-                Just scored these vintage Levi's for $15 at the thrift store!
-                Who says sustainable fashion has to be expensive? #ThriftFlip
-                #SustainableFashion
-              </p>
-              <div class="mb-4">
-                <img
-                  class="w-full h-64 object-cover rounded-lg"
-                  src="https://images.unsplash.com/photo-1565084888279-aca607ecce0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-                  alt="Thrifted jeans"
-                />
-              </div>
-              <div class="flex justify-between text-gray-500">
-                <button class="flex items-center hover:text-pink-500">
-                  <i class="far fa-heart mr-1"></i> 423
-                </button>
-                <button class="flex items-center hover:text-blue-500">
-                  <i class="far fa-comment mr-1"></i> 87
-                </button>
-                <button class="flex items-center hover:text-green-500">
-                  <i class="fas fa-retweet mr-1"></i> 32
-                </button>
-                <button class="flex items-center hover:text-purple-500">
-                  <i class="far fa-bookmark"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Post 2 -->
-          <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="p-4">
-              <div class="flex items-center mb-4">
-                <img
-                  class="w-10 h-10 rounded-full mr-3"
-                  src="https://randomuser.me/api/portraits/men/45.jpg"
-                  alt="User"
-                />
-                <div>
-                  <h4 class="font-medium">@techbro</h4>
-                  <p class="text-xs text-gray-500">5h ago</p>
-                </div>
-              </div>
-              <p class="mb-4">
-                Built this sick gaming PC over the weekend! RTX 4090 goes crazy
-                🔥 Specs in comments. What games should I play first?
-                #PCMasterRace #GamingSetup
-              </p>
-              <div class="mb-4">
-                <img
-                  class="w-full h-64 object-cover rounded-lg"
-                  src="https://images.unsplash.com/photo-1593642632823-8f785ba67e45?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2089&q=80"
-                  alt="Gaming PC"
-                />
-              </div>
-              <div class="flex justify-between text-gray-500">
-                <button class="flex items-center hover:text-pink-500">
-                  <i class="far fa-heart mr-1"></i> 1.2K
-                </button>
-                <button class="flex items-center hover:text-blue-500">
-                  <i class="far fa-comment mr-1"></i> 245
-                </button>
-                <button class="flex items-center hover:text-green-500">
-                  <i class="fas fa-retweet mr-1"></i> 98
-                </button>
-                <button class="flex items-center hover:text-purple-500">
-                  <i class="far fa-bookmark"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Post 3 -->
-          <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="p-4">
-              <div class="flex items-center mb-4">
-                <img
-                  class="w-10 h-10 rounded-full mr-3"
-                  src="https://randomuser.me/api/portraits/women/63.jpg"
-                  alt="User"
-                />
-                <div>
-                  <h4 class="font-medium">@plantmom</h4>
-                  <p class="text-xs text-gray-500">1d ago</p>
-                </div>
-              </div>
-              <p class="mb-4">
-                My monstera just put out this HUGE new leaf! 🌿 Plant care tips:
-                bright indirect light, water when top 2" are dry, and lots of
-                love! #PlantTok #UrbanJungle
-              </p>
-              <div class="mb-4">
-                <img
-                  class="w-full h-64 object-cover rounded-lg"
-                  src="https://images.unsplash.com/photo-1598885155128-7aac56b7b739?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2089&q=80"
-                  alt="Monstera plant"
-                />
-              </div>
-              <div class="flex justify-between text-gray-500">
-                <button class="flex items-center hover:text-pink-500">
-                  <i class="far fa-heart mr-1"></i> 876
-                </button>
-                <button class="flex items-center hover:text-blue-500">
-                  <i class="far fa-comment mr-1"></i> 134
-                </button>
-                <button class="flex items-center hover:text-green-500">
-                  <i class="fas fa-retweet mr-1"></i> 56
-                </button>
-                <button class="flex items-center hover:text-purple-500">
-                  <i class="far fa-bookmark"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Short Videos Section -->
-      <div class="mb-12">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">🎥 Short Videos</h2>
-          <a
-            href="#"
-            class="text-sm font-medium text-pink-500 hover:text-pink-600"
-            >See all</a
-          >
-        </div>
-
-        <div
-          class="video-scroll-container flex overflow-x-auto pb-4 -mx-2 px-2"
-        >
-          <!-- Video 1 -->
-          <div class="video-card mx-2 w-64 flex-shrink-0">
-            <div class="relative rounded-xl overflow-hidden h-96">
-              <img
-                src="https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80"
-                alt="Video thumbnail"
-                class="w-full h-full object-cover"
-              />
-              <div class="absolute inset-0 video-overlay flex items-end p-4">
-                <div class="text-white">
-                  <div class="flex items-center mb-2">
-                    <img
-                      class="w-8 h-8 rounded-full mr-2"
-                      src="https://randomuser.me/api/portraits/women/44.jpg"
-                      alt="Creator"
-                    />
-                    <span class="font-medium">@cryptoqueen</span>
-                  </div>
-                  <p class="text-sm">Creating digital art with AI tools</p>
-                </div>
-              </div>
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div
-                  class="play-button bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center"
-                >
-                  <i class="fas fa-play text-white text-xl"></i>
-                </div>
-              </div>
-              <div
-                class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full"
-              >
-                1:23
-              </div>
-            </div>
-          </div>
-
-          <!-- Video 2 -->
-          <div class="video-card mx-2 w-64 flex-shrink-0">
-            <div class="relative rounded-xl overflow-hidden h-96">
-              <img
-                src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-                alt="Video thumbnail"
-                class="w-full h-full object-cover"
-              />
-              <div class="absolute inset-0 video-overlay flex items-end p-4">
-                <div class="text-white">
-                  <div class="flex items-center mb-2">
-                    <img
-                      class="w-8 h-8 rounded-full mr-2"
-                      src="https://randomuser.me/api/portraits/men/32.jpg"
-                      alt="Creator"
-                    />
-                    <span class="font-medium">@beatsmith</span>
-                  </div>
-                  <p class="text-sm">Studio session for my new track</p>
-                </div>
-              </div>
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div
-                  class="play-button bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center"
-                >
-                  <i class="fas fa-play text-white text-xl"></i>
-                </div>
-              </div>
-              <div
-                class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full"
-              >
-                0:45
-              </div>
-            </div>
-          </div>
-
-          <!-- Video 3 -->
-          <div class="video-card mx-2 w-64 flex-shrink-0">
-            <div class="relative rounded-xl overflow-hidden h-96">
-              <img
-                src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-                alt="Video thumbnail"
-                class="w-full h-full object-cover"
-              />
-              <div class="absolute inset-0 video-overlay flex items-end p-4">
-                <div class="text-white">
-                  <div class="flex items-center mb-2">
-                    <img
-                      class="w-8 h-8 rounded-full mr-2"
-                      src="https://randomuser.me/api/portraits/women/68.jpg"
-                      alt="Creator"
-                    />
-                    <span class="font-medium">@veganeats</span>
-                  </div>
-                  <p class="text-sm">5-minute vegan breakfast ideas</p>
-                </div>
-              </div>
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div
-                  class="play-button bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center"
-                >
-                  <i class="fas fa-play text-white text-xl"></i>
-                </div>
-              </div>
-              <div
-                class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full"
-              >
-                0:58
-              </div>
-            </div>
-          </div>
-
-          <!-- Video 4 -->
-          <div class="video-card mx-2 w-64 flex-shrink-0">
-            <div class="relative rounded-xl overflow-hidden h-96">
-              <img
-                src="https://images.unsplash.com/photo-1541534741688-6078c5200f81?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80"
-                alt="Video thumbnail"
-                class="w-full h-full object-cover"
-              />
-              <div class="absolute inset-0 video-overlay flex items-end p-4">
-                <div class="text-white">
-                  <div class="flex items-center mb-2">
-                    <img
-                      class="w-8 h-8 rounded-full mr-2"
-                      src="https://randomuser.me/api/portraits/men/75.jpg"
-                      alt="Creator"
-                    />
-                    <span class="font-medium">@changemaker</span>
-                  </div>
-                  <p class="text-sm">How to organize a protest safely</p>
-                </div>
-              </div>
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div
-                  class="play-button bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center"
-                >
-                  <i class="fas fa-play text-white text-xl"></i>
-                </div>
-              </div>
-              <div
-                class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full"
-              >
-                2:15
-              </div>
-            </div>
-          </div>
-
-          <!-- Video 5 -->
-          <div class="video-card mx-2 w-64 flex-shrink-0">
-            <div class="relative rounded-xl overflow-hidden h-96">
-              <img
-                src="https://images.unsplash.com/photo-1565084888279-aca607ecce0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-                alt="Video thumbnail"
-                class="w-full h-full object-cover"
-              />
-              <div class="absolute inset-0 video-overlay flex items-end p-4">
-                <div class="text-white">
-                  <div class="flex items-center mb-2">
-                    <img
-                      class="w-8 h-8 rounded-full mr-2"
-                      src="https://randomuser.me/api/portraits/women/22.jpg"
-                      alt="Creator"
-                    />
-                    <span class="font-medium">@thriftqueen</span>
-                  </div>
-                  <p class="text-sm">Thrift flip: jeans to mini skirt</p>
-                </div>
-              </div>
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div
-                  class="play-button bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center"
-                >
-                  <i class="fas fa-play text-white text-xl"></i>
-                </div>
-              </div>
-              <div
-                class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full"
-              >
-                1:42
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Communities Section -->
-      <div class="mb-12">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">
-            🌍 Communities You Might Like
-          </h2>
-          <a
-            href="#"
-            class="text-sm font-medium text-pink-500 hover:text-pink-600"
-            >See all</a
-          >
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <!-- Community 1 -->
-          <div
-            class="bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl p-4 glow-on-hover transition-all duration-300"
-          >
-            <div class="flex items-center mb-3">
-              <div
-                class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-md mr-3"
-              >
-                <i class="fas fa-robot text-purple-500 text-xl"></i>
-              </div>
-              <h3 class="font-bold">AI Art Collective</h3>
-            </div>
-            <p class="text-sm text-gray-600 mb-3">
-              Exploring the intersection of art and artificial intelligence
-            </p>
-            <div class="flex justify-between text-xs">
-              <span class="text-gray-500">12.4K members</span>
-              <button class="text-purple-500 font-medium">Join</button>
-            </div>
-          </div>
-
-          <!-- Community 2 -->
-          <div
-            class="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl p-4 glow-on-hover transition-all duration-300"
-          >
-            <div class="flex items-center mb-3">
-              <div
-                class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-md mr-3"
-              >
-                <i class="fas fa-globe-americas text-blue-500 text-xl"></i>
-              </div>
-              <h3 class="font-bold">Climate Warriors</h3>
-            </div>
-            <p class="text-sm text-gray-600 mb-3">
-              Taking action for a sustainable future
-            </p>
-            <div class="flex justify-between text-xs">
-              <span class="text-gray-500">45.7K members</span>
-              <button class="text-blue-500 font-medium">Join</button>
-            </div>
-          </div>
-
-          <!-- Community 3 -->
-          <div
-            class="bg-gradient-to-br from-yellow-100 to-orange-100 rounded-xl p-4 glow-on-hover transition-all duration-300"
-          >
-            <div class="flex items-center mb-3">
-              <div
-                class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-md mr-3"
-              >
-                <i class="fas fa-utensils text-yellow-500 text-xl"></i>
-              </div>
-              <h3 class="font-bold">Budget Eats</h3>
-            </div>
-            <p class="text-sm text-gray-600 mb-3">
-              Delicious meals that won't break the bank
-            </p>
-            <div class="flex justify-between text-xs">
-              <span class="text-gray-500">28.1K members</span>
-              <button class="text-orange-500 font-medium">Join</button>
-            </div>
-          </div>
-
-          <!-- Community 4 -->
-          <div
-            class="bg-gradient-to-br from-green-100 to-teal-100 rounded-xl p-4 glow-on-hover transition-all duration-300"
-          >
-            <div class="flex items-center mb-3">
-              <div
-                class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-md mr-3"
-              >
-                <i class="fas fa-headphones text-green-500 text-xl"></i>
-              </div>
-              <h3 class="font-bold">Indie Music Hub</h3>
-            </div>
-            <p class="text-sm text-gray-600 mb-3">
-              Discover and support independent artists
-            </p>
-            <div class="flex justify-between text-xs">
-              <span class="text-gray-500">36.9K members</span>
-              <button class="text-green-500 font-medium">Join</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div
+      id="content"
+      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+    ></div>
 
     <!-- Floating Action Button -->
-    <a href="#" class="floating-action-btn">
+    <button
+      id="fab"
+      class="floating-action-btn"
+      onclick="handleCreateContent()"
+    >
       <i class="fas fa-plus"></i>
-    </a>
+    </button>
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-white pt-12 pb-6">
@@ -1031,16 +479,24 @@
             <h3 class="text-lg font-semibold mb-4">VibeZone</h3>
             <ul class="space-y-2">
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">About</a>
+                <a href="?page=about" class="text-gray-400 hover:text-white"
+                  >About</a
+                >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Careers</a>
+                <a href="?page=careers" class="text-gray-400 hover:text-white"
+                  >Careers</a
+                >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Brand</a>
+                <a href="?page=brand" class="text-gray-400 hover:text-white"
+                  >Brand</a
+                >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Press</a>
+                <a href="?page=press" class="text-gray-400 hover:text-white"
+                  >Press</a
+                >
               </li>
             </ul>
           </div>
@@ -1048,20 +504,26 @@
             <h3 class="text-lg font-semibold mb-4">Help</h3>
             <ul class="space-y-2">
               <li>
-                <a href="#" class="text-gray-400 hover:text-white"
+                <a href="?page=help" class="text-gray-400 hover:text-white"
                   >Help Center</a
                 >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Safety</a>
+                <a href="?page=safety" class="text-gray-400 hover:text-white"
+                  >Safety</a
+                >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white"
+                <a
+                  href="?page=guidelines"
+                  class="text-gray-400 hover:text-white"
                   >Community Guidelines</a
                 >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Terms</a>
+                <a href="?page=terms" class="text-gray-400 hover:text-white"
+                  >Terms</a
+                >
               </li>
             </ul>
           </div>
@@ -1069,20 +531,22 @@
             <h3 class="text-lg font-semibold mb-4">Features</h3>
             <ul class="space-y-2">
               <li>
-                <a href="#" class="text-gray-400 hover:text-white"
+                <a href="?page=stories" class="text-gray-400 hover:text-white"
                   >Vibe Stories</a
                 >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Vibe Live</a>
+                <a href="?page=live" class="text-gray-400 hover:text-white"
+                  >Vibe Live</a
+                >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white"
+                <a href="?page=reels" class="text-gray-400 hover:text-white"
                   >Vibe Reels</a
                 >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white"
+                <a href="?page=events" class="text-gray-400 hover:text-white"
                   >Vibe Events</a
                 >
               </li>
@@ -1091,28 +555,42 @@
           <div>
             <h3 class="text-lg font-semibold mb-4">Connect</h3>
             <div class="flex space-x-4 mb-4">
-              <a href="#" class="text-gray-400 hover:text-white text-xl"
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                class="text-gray-400 hover:text-white text-xl"
                 ><i class="fab fa-instagram"></i
               ></a>
-              <a href="#" class="text-gray-400 hover:text-white text-xl"
+              <a
+                href="https://tiktok.com"
+                target="_blank"
+                class="text-gray-400 hover:text-white text-xl"
                 ><i class="fab fa-tiktok"></i
               ></a>
-              <a href="#" class="text-gray-400 hover:text-white text-xl"
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                class="text-gray-400 hover:text-white text-xl"
                 ><i class="fab fa-twitter"></i
               ></a>
-              <a href="#" class="text-gray-400 hover:text-white text-xl"
+              <a
+                href="https://discord.com"
+                target="_blank"
+                class="text-gray-400 hover:text-white text-xl"
                 ><i class="fab fa-discord"></i
               ></a>
             </div>
             <p class="text-gray-400 text-sm">Download the app:</p>
             <div class="flex space-x-2 mt-2">
               <a
-                href="#"
+                href="https://www.apple.com/app-store/"
+                target="_blank"
                 class="bg-gray-800 text-white px-3 py-1 rounded text-sm"
                 >App Store</a
               >
               <a
-                href="#"
+                href="https://play.google.com/store"
+                target="_blank"
                 class="bg-gray-800 text-white px-3 py-1 rounded text-sm"
                 >Google Play</a
               >
@@ -1121,208 +599,216 @@
         </div>
         <div class="border-t border-gray-800 pt-6">
           <p class="text-gray-400 text-sm text-center">
-            &copy; 2023 VibeZone. All rights reserved. Made with ❤️ for Gen Z
+            © 2025 VibeZone. All rights reserved. Made with ❤️ for Gen Z
           </p>
         </div>
       </div>
     </footer>
 
     <script>
-      // Carousel functionality
-      document.addEventListener("DOMContentLoaded", function () {
-        const carouselItems = document.querySelectorAll(".carousel-item");
-        const indicators = document.querySelectorAll(".carousel-indicator");
-        let currentIndex = 0;
+      // Initialize Socket.IO
+      const socket = io("http://localhost:5000");
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user && user.id) {
+        socket.emit("join", user.id);
+      }
 
-        function showSlide(index) {
-          carouselItems.forEach((item) => item.classList.remove("active"));
-          indicators.forEach((indicator) =>
-            indicator.classList.remove("bg-white", "opacity-100")
-          );
-
-          carouselItems[index].classList.add("active");
-          indicators[index].classList.add("bg-white", "opacity-100");
-          currentIndex = index;
+      // Update user display
+      document.addEventListener("DOMContentLoaded", () => {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const displayNameEl = document.getElementById("user-display-name");
+        const avatarEl = document.getElementById("user-avatar");
+        const createPostBtn = document.getElementById("create-post-btn");
+        const fab = document.getElementById("fab");
+        if (user && user.username) {
+          displayNameEl.textContent = user.username;
+          if (user.avatar) {
+            avatarEl.src = `http://localhost:5000${user.avatar}`;
+          }
+          createPostBtn.classList.remove("hidden");
+          fab.classList.remove("hidden");
+        } else {
+          displayNameEl.textContent = "Guest";
+          createPostBtn.classList.add("hidden");
+          fab.classList.add("hidden");
         }
 
-        // Initialize first slide
-        showSlide(0);
-
-        // Auto-rotate carousel
-        let interval = setInterval(() => {
-          let nextIndex = (currentIndex + 1) % carouselItems.length;
-          showSlide(nextIndex);
-        }, 5000);
-
-        // Indicator click events
-        indicators.forEach((indicator) => {
-          indicator.addEventListener("click", function () {
-            clearInterval(interval);
-            const index = parseInt(this.getAttribute("data-index"));
-            showSlide(index);
-
-            // Restart auto-rotation
-            interval = setInterval(() => {
-              let nextIndex = (currentIndex + 1) % carouselItems.length;
-              showSlide(nextIndex);
-            }, 5000);
-          });
-        });
-
-        // Video hover effects
-        const videoCards = document.querySelectorAll(".video-card");
-        videoCards.forEach((card) => {
-          card.addEventListener("mouseenter", function () {
-            this.querySelector(".play-button").style.transform = "scale(1.1)";
-            this.querySelector(".play-button").style.opacity = "0.9";
-          });
-
-          card.addEventListener("mouseleave", function () {
-            this.querySelector(".play-button").style.transform = "scale(1)";
-            this.querySelector(".play-button").style.opacity = "1";
-          });
+        // Highlight active nav link
+        const navLinks = document.querySelectorAll(".nav-link");
+        const currentPage =
+          new URLSearchParams(window.location.search).get("page") || "home";
+        navLinks.forEach((link) => {
+          if (link.dataset.page === currentPage) {
+            link.classList.add("border-pink-500", "text-gray-900");
+            link.classList.remove("border-transparent", "text-gray-500");
+          }
         });
       });
-    </script>
-    <script type="text/babel">
-      const { useState, useEffect } = React;
 
-      const ForYouSection = () => {
-        const [posts, setPosts] = useState([]);
+      // Handle avatar click
+      function handleAvatarClick() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user && user.id) {
+          window.location.href = "?page=profile";
+        } else {
+          window.location.href = "?page=auth";
+        }
+      }
 
-        useEffect(() => {
-          fetch("http://localhost:3000/api/posts?sort=newest")
-            .then((res) => res.json())
-            .then((data) => setPosts(data))
-            .catch((err) => console.error(err));
-        }, []);
-
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {posts.map((post) => (
-              <div
-                key={post.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden"
-              >
-                <div className="p-4">
-                  <div className="flex items-center mb-4">
-                    <img
-                      className="w-10 h-10 rounded-full mr-3"
-                      src="https://randomuser.me/api/portraits/women/22.jpg"
-                      alt="User"
-                    />
-                    <div>
-                      <h4 className="font-medium">{post.username}</h4>
-                      <p className="text-xs text-gray-500">
-                        {new Date(post.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mb-4">{post.content}</p>
-                  {post.imageUrl && (
-                    <div className="mb-4">
-                      <img
-                        className="w-full h-64 object-cover rounded-lg"
-                        src={post.imageUrl}
-                        alt="Post"
-                      />
-                    </div>
-                  )}
-                  <div className="flex justify-between text-gray-500">
-                    <button className="flex items-center hover:text-pink-500">
-                      <i className="far fa-heart mr-1"></i> {post.likes}
-                    </button>
-                    <button className="flex items-center hover:text-blue-500">
-                      <i className="far fa-comment mr-1"></i> {post.comments}
-                    </button>
-                  </div>
-                </div>
+      // Handle notifications
+      async function handleNotifications() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user || !user.id) {
+          window.location.href = "?page=auth";
+          return;
+        }
+        try {
+          const response = await fetch(
+            "http://localhost:5000/api/notifications",
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+          const data = await response.json();
+          if (data.success && data.data.length === 0) {
+            document.getElementById("content").innerHTML = `
+              <div class="text-center py-12">
+                <h3 class="text-lg font-semibold text-gray-700">No Notifications</h3>
+                <p class="text-gray-500">You have no notifications at the moment.</p>
               </div>
-            ))}
-          </div>
-        );
-      };
+            `;
+            window.history.pushState({}, "", "?page=notifications");
+          } else {
+            window.location.href = "?page=notifications";
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Failed to fetch notifications");
+        }
+      }
 
-      ReactDOM.render(
-        <ForYouSection />,
-        document.querySelector(".grid.grid-cols-1.md\\:grid-cols-3.gap-6")
-      );
-    </script>
-    <script type="text/babel">
-      const { useState } = React;
+      // Handle create content
+      function handleCreateContent() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user || !user.id) {
+          window.location.href = "?page=auth";
+          return;
+        }
+        document
+          .getElementById("create-content-modal")
+          .classList.remove("hidden");
+        selectContentType("post"); // Default to post
+      }
 
-      const UploadForm = () => {
-        const [file, setFile] = useState(null);
-        const [description, setDescription] = useState("");
-        const [duration, setDuration] = useState("");
+      // Select content type
+      function selectContentType(type) {
+        const buttons = document.querySelectorAll(".content-type-btn");
+        const fields = document.querySelectorAll(".content-fields");
+        buttons.forEach((btn) => {
+          btn.classList.remove("bg-pink-500", "text-white");
+          btn.classList.add("bg-gray-200", "text-gray-700");
+          if (btn.dataset.type === type) {
+            btn.classList.add("bg-pink-500", "text-white");
+            btn.classList.remove("bg-gray-200", "text-gray-700");
+          }
+        });
+        fields.forEach((field) => {
+          field.classList.add("hidden");
+          if (field.id === `${type}-fields`) {
+            field.classList.remove("hidden");
+          }
+        });
+      }
 
-        const handleSubmit = (e) => {
+      // Close create content modal
+      function closeCreateContentModal() {
+        document.getElementById("create-content-modal").classList.add("hidden");
+        document.getElementById("create-content-form").reset();
+        selectContentType("post"); // Reset to post
+      }
+
+      // Handle content creation
+      document
+        .getElementById("create-content-form")
+        .addEventListener("submit", async (e) => {
           e.preventDefault();
+          const user = JSON.parse(localStorage.getItem("user"));
+          if (!user || !user.id) {
+            window.location.href = "?page=auth";
+            return;
+          }
+          const activeBtn = document.querySelector(
+            ".content-type-btn.bg-pink-500"
+          );
+          const type = activeBtn.dataset.type;
           const formData = new FormData();
-          formData.append("video", file);
-          formData.append("description", description);
-          formData.append("duration", duration);
+          let endpoint = "";
+          let socketEvent = "";
 
-          fetch("http://localhost:3000/api/reels", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: formData,
-          })
-            .then((res) => res.json())
-            .then((data) => alert("Video uploaded!"))
-            .catch((err) => console.error(err));
-        };
+          if (type === "post") {
+            const content = document.getElementById("post-content").value;
+            const hashtags = document.getElementById("post-hashtags").value;
+            const image = document.getElementById("post-image").files[0];
+            formData.append("content", content);
+            formData.append("hashtags", hashtags);
+            if (image) {
+              formData.append("media", image);
+            }
+            endpoint = "/api/posts";
+            socketEvent = "newPost";
+          } else if (type === "story") {
+            const media = document.getElementById("story-media").files[0];
+            if (media) {
+              formData.append("media", media);
+            }
+            endpoint = "/api/stories";
+            socketEvent = "newStory";
+          } else if (type === "reel") {
+            const description =
+              document.getElementById("reel-description").value;
+            const hashtags = document.getElementById("reel-hashtags").value;
+            const video = document.getElementById("reel-video").files[0];
+            formData.append("description", description);
+            formData.append("hashtags", hashtags);
+            if (video) {
+              formData.append("video", video);
+            }
+            endpoint = "/api/reels";
+            socketEvent = "newReel";
+          }
 
-        return (
-          <form
-            onSubmit={handleSubmit}
-            className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md"
-          >
-            <div className="mb-4">
-              <label className="block text-gray-700">Video File</label>
-              <input
-                type="file"
-                accept="video/*"
-                onChange={(e) => setFile(e.target.files[0])}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700">Description</label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700">
-                Duration (e.g., 0:45)
-              </label>
-              <input
-                type="text"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full py-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded"
-            >
-              Upload Reel
-            </button>
-          </form>
-        );
-      };
+          try {
+            const response = await fetch(`http://localhost:5000${endpoint}`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+              body: formData,
+            });
+            const data = await response.json();
+            if (data.success) {
+              closeCreateContentModal();
+              socket.emit(socketEvent, data.data);
+              window.location.reload();
+            } else {
+              alert(data.message);
+            }
+          } catch (err) {
+            console.error(err);
+            alert(`Failed to create ${type}`);
+          }
+        });
 
-      ReactDOM.render(<UploadForm />, document.getElementById("upload-root"));
+      // Logout
+      function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "?page=auth";
+      }
     </script>
+    <script src="scripts/router.js"></script>
+    <script src="scripts/api.js"></script>
   </body>
 </html>

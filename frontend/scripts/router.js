@@ -24,16 +24,21 @@ const protectedPages = ["profile", "messages", "notifications", "stories"];
 const loadPage = async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const page = urlParams.get("page") || "home";
+  console.log("URL:", window.location.href);
+  console.log("Query page:", urlParams.get("page"));
+  console.log("Selected page:", page);
   const contentDiv = document.getElementById("content");
 
   // Check for protected pages
   const user = JSON.parse(localStorage.getItem("user"));
   if (protectedPages.includes(page) && (!user || !user.id)) {
+    console.log("Redirecting to auth: protected page", page);
     history.pushState({}, "", "?page=auth");
     return loadPage(); // Recursively load auth page
   }
 
   if (!pages[page]) {
+    console.log("Page not found:", page);
     contentDiv.innerHTML = `
       <div class="text-center py-12">
         <h2 class="text-2xl font-bold text-gray-900">404 - Page Not Found</h2>
@@ -43,12 +48,14 @@ const loadPage = async () => {
   }
 
   try {
+    console.log("Fetching:", pages[page]);
     const response = await fetch(pages[page]);
     if (!response.ok) {
       throw new Error(`Failed to load ${pages[page]}: ${response.statusText}`);
     }
     const html = await response.text();
     contentDiv.innerHTML = html;
+    console.log("Loaded page:", page);
 
     // Re-run scripts in the loaded page
     const scripts = contentDiv.querySelectorAll("script");
@@ -67,7 +74,7 @@ const loadPage = async () => {
     contentDiv.innerHTML = `
       <div class="text-center py-12">
         <h2 class="text-2xl font-bold text-gray-900">Error Loading Page</h2>
-        <p class="text-gray-500">Could not load "${page}". Please try again later.</p>
+        <p class="text-gray-500">Could not load "${page}": ${err.message}</p>
       </div>`;
   }
 
@@ -85,13 +92,17 @@ const loadPage = async () => {
 };
 
 // Load page on initial load and popstate
-document.addEventListener("DOMContentLoaded", loadPage);
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Router initialized");
+  loadPage();
+});
 window.addEventListener("popstate", loadPage);
 
 // Handle nav link clicks
 document.addEventListener("click", (e) => {
   const link = e.target.closest(".nav-link");
   if (link) {
+    console.log("Nav link clicked:", link.dataset.page);
     e.preventDefault();
     const page = link.dataset.page;
     history.pushState({}, "", `?page=${page}`);
