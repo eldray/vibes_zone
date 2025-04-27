@@ -6,7 +6,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 const passport = require("passport");
 const session = require("express-session");
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/authRoutes");
 const postRoutes = require("./routes/posts");
 const reelRoutes = require("./routes/reels");
 const messageRoutes = require("./routes/messages");
@@ -22,9 +22,9 @@ const io = new Server(server, {
 
 app.use(cors({ origin: "http://localhost:3000" }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
-// Session for Passport.js
 app.use(
   session({
     secret: process.env.JWT_SECRET,
@@ -35,13 +35,11 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/reels", reelRoutes);
 app.use("/api/messages", messageRoutes);
 
-// Serve frontend
 app.use(
   "/partials",
   express.static(path.join(__dirname, "../frontend/partials"))
@@ -55,7 +53,6 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/base.html"));
 });
 
-// Socket.IO setup
 setupSocket(io);
 
 const PORT = process.env.PORT || 3000;

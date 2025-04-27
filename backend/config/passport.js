@@ -20,10 +20,13 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "http://localhost:3000/api/auth/google/callback",
+      scope: ["profile", "email"], // Add scopes to retrieve profile and email
     },
     (accessToken, refreshToken, profile, done) => {
-      const email = profile.emails[0].value;
       const username = `google_${profile.id}`;
+      const email = profile.emails && profile.emails[0]?.value; // Optional email
+      const displayName =
+        profile.displayName || profile.name?.givenName || username; // Fallback to username
 
       db.get(
         "SELECT * FROM users WHERE username = ?",
@@ -32,11 +35,11 @@ passport.use(
           if (user) return done(null, user);
           const password = bcrypt.hashSync(profile.id, 8);
           db.run(
-            "INSERT INTO users (username, password) VALUES (?, ?)",
-            [username, password],
+            "INSERT INTO users (username, password, email, displayName) VALUES (?, ?, ?, ?)",
+            [username, password, email, displayName],
             function (err) {
               if (err) return done(err);
-              done(null, { id: this.lastID, username });
+              done(null, { id: this.lastID, username, email, displayName });
             }
           );
         }
@@ -55,6 +58,9 @@ passport.use(
     },
     (accessToken, refreshToken, profile, done) => {
       const username = `facebook_${profile.id}`;
+      const email = profile.emails && profile.emails[0]?.value; // Optional email
+      const displayName =
+        profile.name?.givenName || profile.displayName || username; // Fallback to username
 
       db.get(
         "SELECT * FROM users WHERE username = ?",
@@ -63,11 +69,11 @@ passport.use(
           if (user) return done(null, user);
           const password = bcrypt.hashSync(profile.id, 8);
           db.run(
-            "INSERT INTO users (username, password) VALUES (?, ?)",
-            [username, password],
+            "INSERT INTO users (username, password, email, displayName) VALUES (?, ?, ?, ?)",
+            [username, password, email, displayName],
             function (err) {
               if (err) return done(err);
-              done(null, { id: this.lastID, username });
+              done(null, { id: this.lastID, username, email, displayName });
             }
           );
         }

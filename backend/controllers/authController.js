@@ -1,47 +1,55 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const db = require("../config/database");
+const User = require("../models/User");
 
 exports.signup = (req, res) => {
-  const { username, password } = req.body;
-  const hashedPassword = bcrypt.hashSync(password, 8);
-
-  db.run(
-    "INSERT INTO users (username, password) VALUES (?, ?)",
-    [username, hashedPassword],
-    function (err) {
-      if (err)
-        return res.status(400).json({ error: "Username already exists" });
-      const token = jwt.sign(
-        { id: this.lastID, username },
-        process.env.JWT_SECRET,
-        { expiresIn: "24h" }
-      );
-      res.json({ token, user: { id: this.lastID, username } });
-    }
-  );
+  const { username, password, email, displayName } = req.body;
+  if (!username || !password)
+    return res
+      .status(400)
+      .json({ error: "Username and password are required" });
+  User.create(username, password, email, displayName, (err, user) => {
+    if (err) return res.status(400).json({ error: "Username already exists" });
+    const token = jwt.sign({ id: user.id, username }, process.env.JWT_SECRET, {
+      expiresIn: "24h",
+    });
+    res.json({ token, user });
+  });
 };
 
 exports.login = (req, res) => {
   const { username, password } = req.body;
-
-  db.get("SELECT * FROM users WHERE username = ?", [username], (err, user) => {
+  if (!username || !password)
+    return res
+      .status(400)
+      .json({ error: "Username and password are required" });
+  User.findByUsername(username, (err, user) => {
     if (err || !user) return res.status(400).json({ error: "User not found" });
     const isValid = bcrypt.compareSync(password, user.password);
     if (!isValid) return res.status(400).json({ error: "Invalid password" });
-
     const token = jwt.sign({ id: user.id, username }, process.env.JWT_SECRET, {
       expiresIn: "24h",
     });
-    res.json({ token, user: { id: user.id, username } });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        username,
+        email: user.email,
+        displayName: user.displayName,
+      },
+    });
   });
 };
 
 exports.socialCallback = (req, res) => {
+  const user = req.user;
   const token = jwt.sign(
-    { id: req.user.id, username: req.user.username },
+    { id: user.id, username: user.username },
     process.env.JWT_SECRET,
-    { expiresIn: "24h" }
+    {
+      expiresIn: "24h",
+    }
   );
-  res.redirect(`http://localhost:3000/index.html?token=${token}`);
+  res.redirect(`/?page=home&token=${token}`);
 };

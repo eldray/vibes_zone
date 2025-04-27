@@ -1,21 +1,8 @@
-const db = require("../config/database");
+const Post = require("../models/Post");
 
 exports.getPosts = (req, res) => {
   const { sort = "trending", category } = req.query;
-  let query =
-    "SELECT p.*, u.username FROM posts p JOIN users u ON p.userId = u.id";
-  const params = [];
-
-  if (category && category !== "All") {
-    query += " WHERE p.content LIKE ?";
-    params.push(`%#${category}%`);
-  }
-
-  if (sort === "trending") query += " ORDER BY p.likes DESC";
-  else if (sort === "newest") query += " ORDER BY p.createdAt DESC";
-  else if (sort === "most_liked") query += " ORDER BY p.likes DESC";
-
-  db.all(query, params, (err, posts) => {
+  Post.findAll({ sort, category }, (err, posts) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(posts);
   });
@@ -23,12 +10,42 @@ exports.getPosts = (req, res) => {
 
 exports.createPost = (req, res) => {
   const { content, imageUrl } = req.body;
-  db.run(
-    "INSERT INTO posts (userId, content, imageUrl) VALUES (?, ?, ?)",
-    [req.user.id, content, imageUrl],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ id: this.lastID, content, imageUrl, userId: req.user.id });
-    }
-  );
+  if (!content && !imageUrl)
+    return res.status(400).json({ error: "Content or imageUrl is required" });
+  Post.create(req.user.id, content, imageUrl, (err, post) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(post);
+  });
+};
+
+exports.getPostById = (req, res) => {
+  const { id } = req.params;
+  Post.findById(id, (err, post) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    res.json(post);
+  });
+};
+
+exports.updatePost = (req, res) => {
+  const { id } = req.params;
+  const { content, imageUrl } = req.body;
+  if (!content && !imageUrl)
+    return res.status(400).json({ error: "Content or imageUrl is required" });
+  Post.update(id, req.user.id, content, imageUrl, (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.changes === 0)
+      return res.status(404).json({ error: "Post not found or unauthorized" });
+    res.json({ message: "Post updated" });
+  });
+};
+
+exports.deletePost = (req, res) => {
+  const { id } = req.params;
+  Post.delete(id, req.user.id, (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.changes === 0)
+      return res.status(404).json({ error: "Post not found or unauthorized" });
+    res.json({ message: "Post deleted" });
+  });
 };
