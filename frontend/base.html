@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.5/babel.min.js"></script>
-    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="https://cdn.socket.io/4.8.0/socket.io.min.js"></script>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
@@ -56,7 +56,6 @@
         box-shadow: 0 6px 20px rgba(255, 107, 149, 0.6);
       }
 
-      /* Styles from explore.html */
       .carousel-item {
         transition: opacity 1s ease-in-out;
       }
@@ -207,6 +206,10 @@
           box-shadow: 0 0 0 0 rgba(255, 107, 149, 0);
         }
       }
+
+      .dropdown-menu {
+        transition: all 0.3s ease;
+      }
     </style>
   </head>
   <body class="bg-gray-50">
@@ -247,26 +250,35 @@
                 >Messages</a
               >
               <a
-                href="?page=auth"
+                href="?page=notifications"
                 class="nav-link border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                data-page="auth"
-                >Login/Signup</a
+                data-page="notifications"
+                >Notifications</a
+              >
+              <a
+                href="?page=profile"
+                class="nav-link border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                data-page="profile"
+                >Profile</a
               >
             </div>
           </div>
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <button
+                id="create-post-btn"
                 type="button"
                 class="relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-500 to-orange-500 shadow-sm hover:from-pink-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                onclick="handleCreateContent()"
               >
-                <span>Create Post</span>
+                <span>Create</span>
               </button>
             </div>
             <div class="ml-4 flex items-center md:ml-6">
               <button
                 type="button"
                 class="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                onclick="handleNotifications()"
               >
                 <span class="sr-only">View notifications</span>
                 <i class="far fa-bell text-xl"></i>
@@ -277,8 +289,7 @@
                     type="button"
                     class="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     id="user-menu-button"
-                    aria-expanded="false"
-                    aria-haspopup="true"
+                    onclick="handleAvatarClick()"
                   >
                     <span class="sr-only">Open user menu</span>
                     <span
@@ -286,11 +297,33 @@
                       class="text-gray-700 font-medium"
                     ></span>
                     <img
+                      id="user-avatar"
                       class="h-8 w-8 rounded-full ml-2"
                       src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                       alt=""
                     />
                   </button>
+                </div>
+                <div
+                  id="user-menu"
+                  class="dropdown-menu hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="user-menu-button"
+                >
+                  <a
+                    href="?page=profile"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    >Your Profile</a
+                  >
+                  <a
+                    href="#"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                    onclick="logout()"
+                    >Sign out</a
+                  >
                 </div>
               </div>
             </div>
@@ -299,6 +332,130 @@
       </div>
     </nav>
 
+    <!-- Create Content Modal -->
+    <div
+      id="create-content-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+    >
+      <div class="bg-white rounded-xl p-6 w-full max-w-md">
+        <h3 class="text-lg font-semibold mb-4">Create Content</h3>
+        <div class="flex justify-around mb-4">
+          <button
+            class="content-type-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            data-type="post"
+            onclick="selectContentType('post')"
+          >
+            Post
+          </button>
+          <button
+            class="content-type-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            data-type="story"
+            onclick="selectContentType('story')"
+          >
+            Story
+          </button>
+          <button
+            class="content-type-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            data-type="reel"
+            onclick="selectContentType('reel')"
+          >
+            Reel
+          </button>
+        </div>
+        <form id="create-content-form">
+          <div id="post-fields" class="content-fields">
+            <div class="mb-4">
+              <textarea
+                id="post-content"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="What's the vibe today?"
+                rows="4"
+                required
+              ></textarea>
+            </div>
+            <div class="mb-4">
+              <input
+                type="text"
+                id="post-hashtags"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="Add hashtags (e.g., #VibeZone #Fun)"
+              />
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-medium mb-1"
+                >Upload Image</label
+              >
+              <input
+                type="file"
+                id="post-image"
+                accept="image/*"
+                class="w-full p-2 border rounded"
+              />
+            </div>
+          </div>
+          <div id="story-fields" class="content-fields hidden">
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-medium mb-1"
+                >Upload Story (Image/Video)</label
+              >
+              <input
+                type="file"
+                id="story-media"
+                accept="image/*,video/*"
+                class="w-full p-2 border rounded"
+                required
+              />
+            </div>
+          </div>
+          <div id="reel-fields" class="content-fields hidden">
+            <div class="mb-4">
+              <textarea
+                id="reel-description"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="Describe your reel"
+                rows="4"
+              ></textarea>
+            </div>
+            <div class="mb-4">
+              <input
+                type="text"
+                id="reel-hashtags"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="Add hashtags (e.g., #VibeZone #Reels)"
+              />
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-medium mb-1"
+                >Upload Video</label
+              >
+              <input
+                type="file"
+                id="reel-video"
+                accept="video/*"
+                class="w-full p-2 border rounded"
+                required
+              />
+            </div>
+          </div>
+          <div class="flex justify-end space-x-2">
+            <button
+              type="button"
+              class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              onclick="closeCreateContentModal()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded-lg hover:from-pink-600 hover:to-orange-600"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Main Content -->
     <div
       id="content"
@@ -306,9 +463,13 @@
     ></div>
 
     <!-- Floating Action Button -->
-    <a href="#" class="floating-action-btn">
+    <button
+      id="fab"
+      class="floating-action-btn"
+      onclick="handleCreateContent()"
+    >
       <i class="fas fa-plus"></i>
-    </a>
+    </button>
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-white pt-12 pb-6">
@@ -318,16 +479,24 @@
             <h3 class="text-lg font-semibold mb-4">VibeZone</h3>
             <ul class="space-y-2">
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">About</a>
+                <a href="?page=about" class="text-gray-400 hover:text-white"
+                  >About</a
+                >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Careers</a>
+                <a href="?page=careers" class="text-gray-400 hover:text-white"
+                  >Careers</a
+                >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Brand</a>
+                <a href="?page=brand" class="text-gray-400 hover:text-white"
+                  >Brand</a
+                >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Press</a>
+                <a href="?page=press" class="text-gray-400 hover:text-white"
+                  >Press</a
+                >
               </li>
             </ul>
           </div>
@@ -335,20 +504,26 @@
             <h3 class="text-lg font-semibold mb-4">Help</h3>
             <ul class="space-y-2">
               <li>
-                <a href="#" class="text-gray-400 hover:text-white"
+                <a href="?page=help" class="text-gray-400 hover:text-white"
                   >Help Center</a
                 >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Safety</a>
+                <a href="?page=safety" class="text-gray-400 hover:text-white"
+                  >Safety</a
+                >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white"
+                <a
+                  href="?page=guidelines"
+                  class="text-gray-400 hover:text-white"
                   >Community Guidelines</a
                 >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Terms</a>
+                <a href="?page=terms" class="text-gray-400 hover:text-white"
+                  >Terms</a
+                >
               </li>
             </ul>
           </div>
@@ -356,20 +531,22 @@
             <h3 class="text-lg font-semibold mb-4">Features</h3>
             <ul class="space-y-2">
               <li>
-                <a href="#" class="text-gray-400 hover:text-white"
+                <a href="?page=stories" class="text-gray-400 hover:text-white"
                   >Vibe Stories</a
                 >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white">Vibe Live</a>
+                <a href="?page=live" class="text-gray-400 hover:text-white"
+                  >Vibe Live</a
+                >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white"
+                <a href="?page=reels" class="text-gray-400 hover:text-white"
                   >Vibe Reels</a
                 >
               </li>
               <li>
-                <a href="#" class="text-gray-400 hover:text-white"
+                <a href="?page=events" class="text-gray-400 hover:text-white"
                   >Vibe Events</a
                 >
               </li>
@@ -378,28 +555,42 @@
           <div>
             <h3 class="text-lg font-semibold mb-4">Connect</h3>
             <div class="flex space-x-4 mb-4">
-              <a href="#" class="text-gray-400 hover:text-white text-xl"
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                class="text-gray-400 hover:text-white text-xl"
                 ><i class="fab fa-instagram"></i
               ></a>
-              <a href="#" class="text-gray-400 hover:text-white text-xl"
+              <a
+                href="https://tiktok.com"
+                target="_blank"
+                class="text-gray-400 hover:text-white text-xl"
                 ><i class="fab fa-tiktok"></i
               ></a>
-              <a href="#" class="text-gray-400 hover:text-white text-xl"
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                class="text-gray-400 hover:text-white text-xl"
                 ><i class="fab fa-twitter"></i
               ></a>
-              <a href="#" class="text-gray-400 hover:text-white text-xl"
+              <a
+                href="https://discord.com"
+                target="_blank"
+                class="text-gray-400 hover:text-white text-xl"
                 ><i class="fab fa-discord"></i
               ></a>
             </div>
             <p class="text-gray-400 text-sm">Download the app:</p>
             <div class="flex space-x-2 mt-2">
               <a
-                href="#"
+                href="https://www.apple.com/app-store/"
+                target="_blank"
                 class="bg-gray-800 text-white px-3 py-1 rounded text-sm"
                 >App Store</a
               >
               <a
-                href="#"
+                href="https://play.google.com/store"
+                target="_blank"
                 class="bg-gray-800 text-white px-3 py-1 rounded text-sm"
                 >Google Play</a
               >
@@ -408,24 +599,216 @@
         </div>
         <div class="border-t border-gray-800 pt-6">
           <p class="text-gray-400 text-sm text-center">
-            © 2023 VibeZone. All rights reserved. Made with ❤️ for Gen Z
+            © 2025 VibeZone. All rights reserved. Made with ❤️ for Gen Z
           </p>
         </div>
       </div>
     </footer>
 
     <script>
-      // Set user display name in navbar
+      // Initialize Socket.IO
+      const socket = io("http://localhost:5000");
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user && user.id) {
+        socket.emit("join", user.id);
+      }
+
+      // Update user display
       document.addEventListener("DOMContentLoaded", () => {
         const user = JSON.parse(localStorage.getItem("user"));
         const displayNameEl = document.getElementById("user-display-name");
-        if (user && user.displayName) {
-          displayNameEl.textContent = user.displayName;
+        const avatarEl = document.getElementById("user-avatar");
+        const createPostBtn = document.getElementById("create-post-btn");
+        const fab = document.getElementById("fab");
+        if (user && user.username) {
+          displayNameEl.textContent = user.username;
+          if (user.avatar) {
+            avatarEl.src = `http://localhost:5000${user.avatar}`;
+          }
+          createPostBtn.classList.remove("hidden");
+          fab.classList.remove("hidden");
         } else {
           displayNameEl.textContent = "Guest";
+          createPostBtn.classList.add("hidden");
+          fab.classList.add("hidden");
         }
+
+        // Highlight active nav link
+        const navLinks = document.querySelectorAll(".nav-link");
+        const currentPage =
+          new URLSearchParams(window.location.search).get("page") || "home";
+        navLinks.forEach((link) => {
+          if (link.dataset.page === currentPage) {
+            link.classList.add("border-pink-500", "text-gray-900");
+            link.classList.remove("border-transparent", "text-gray-500");
+          }
+        });
       });
+
+      // Handle avatar click
+      function handleAvatarClick() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user && user.id) {
+          window.location.href = "?page=profile";
+        } else {
+          window.location.href = "?page=auth";
+        }
+      }
+
+      // Handle notifications
+      async function handleNotifications() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user || !user.id) {
+          window.location.href = "?page=auth";
+          return;
+        }
+        try {
+          const response = await fetch(
+            "http://localhost:5000/api/notifications",
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+          const data = await response.json();
+          if (data.success && data.data.length === 0) {
+            document.getElementById("content").innerHTML = `
+              <div class="text-center py-12">
+                <h3 class="text-lg font-semibold text-gray-700">No Notifications</h3>
+                <p class="text-gray-500">You have no notifications at the moment.</p>
+              </div>
+            `;
+            window.history.pushState({}, "", "?page=notifications");
+          } else {
+            window.location.href = "?page=notifications";
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Failed to fetch notifications");
+        }
+      }
+
+      // Handle create content
+      function handleCreateContent() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user || !user.id) {
+          window.location.href = "?page=auth";
+          return;
+        }
+        document
+          .getElementById("create-content-modal")
+          .classList.remove("hidden");
+        selectContentType("post"); // Default to post
+      }
+
+      // Select content type
+      function selectContentType(type) {
+        const buttons = document.querySelectorAll(".content-type-btn");
+        const fields = document.querySelectorAll(".content-fields");
+        buttons.forEach((btn) => {
+          btn.classList.remove("bg-pink-500", "text-white");
+          btn.classList.add("bg-gray-200", "text-gray-700");
+          if (btn.dataset.type === type) {
+            btn.classList.add("bg-pink-500", "text-white");
+            btn.classList.remove("bg-gray-200", "text-gray-700");
+          }
+        });
+        fields.forEach((field) => {
+          field.classList.add("hidden");
+          if (field.id === `${type}-fields`) {
+            field.classList.remove("hidden");
+          }
+        });
+      }
+
+      // Close create content modal
+      function closeCreateContentModal() {
+        document.getElementById("create-content-modal").classList.add("hidden");
+        document.getElementById("create-content-form").reset();
+        selectContentType("post"); // Reset to post
+      }
+
+      // Handle content creation
+      document
+        .getElementById("create-content-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const user = JSON.parse(localStorage.getItem("user"));
+          if (!user || !user.id) {
+            window.location.href = "?page=auth";
+            return;
+          }
+          const activeBtn = document.querySelector(
+            ".content-type-btn.bg-pink-500"
+          );
+          const type = activeBtn.dataset.type;
+          const formData = new FormData();
+          let endpoint = "";
+          let socketEvent = "";
+
+          if (type === "post") {
+            const content = document.getElementById("post-content").value;
+            const hashtags = document.getElementById("post-hashtags").value;
+            const image = document.getElementById("post-image").files[0];
+            formData.append("content", content);
+            formData.append("hashtags", hashtags);
+            if (image) {
+              formData.append("media", image);
+            }
+            endpoint = "/api/posts";
+            socketEvent = "newPost";
+          } else if (type === "story") {
+            const media = document.getElementById("story-media").files[0];
+            if (media) {
+              formData.append("media", media);
+            }
+            endpoint = "/api/stories";
+            socketEvent = "newStory";
+          } else if (type === "reel") {
+            const description =
+              document.getElementById("reel-description").value;
+            const hashtags = document.getElementById("reel-hashtags").value;
+            const video = document.getElementById("reel-video").files[0];
+            formData.append("description", description);
+            formData.append("hashtags", hashtags);
+            if (video) {
+              formData.append("video", video);
+            }
+            endpoint = "/api/reels";
+            socketEvent = "newReel";
+          }
+
+          try {
+            const response = await fetch(`http://localhost:5000${endpoint}`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+              body: formData,
+            });
+            const data = await response.json();
+            if (data.success) {
+              closeCreateContentModal();
+              socket.emit(socketEvent, data.data);
+              window.location.reload();
+            } else {
+              alert(data.message);
+            }
+          } catch (err) {
+            console.error(err);
+            alert(`Failed to create ${type}`);
+          }
+        });
+
+      // Logout
+      function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "?page=auth";
+      }
     </script>
     <script src="scripts/router.js"></script>
+    <script src="scripts/api.js"></script>
   </body>
 </html>

@@ -1,0 +1,382 @@
+<h2 className="text-2xl font-bold text-gray-900 mb-6">🎥 Reels</h2>
+<div id="upload-root" className="mb-8"></div>
+<div id="reels-root" className="reels-container"></div>
+
+<style>
+  .video-wrapper {
+    position: absolute;
+    width: 100%;
+    height: calc(100vh - 4rem - 72px);
+    transition: transform 0.3s ease;
+  }
+
+  .video-player {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .video-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    color: white;
+  }
+
+  .video-controls {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1rem;
+  }
+
+  .side-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    margin-bottom: 1rem;
+    cursor: pointer;
+  }
+
+  .control-button {
+    color: white;
+    cursor: pointer;
+  }
+</style>
+
+<script type="text/babel">
+  const { useState, useEffect, useRef } = React;
+
+  const ReelsApp = () => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(true);
+    const [isMuted, setIsMuted] = useState(false);
+    const [reels, setReels] = useState([]);
+    const videoRefs = useRef([]);
+
+    useEffect(() => {
+      fetch("http://localhost:5000/api/reels?page=1&limit=10")
+        .then((res) => res.json())
+        .then((data) => setReels(data.data || []))
+        .catch((err) => console.error(err));
+
+      socket.on("reelLiked", ({ reelId, count }) => {
+        setReels((prev) =>
+          prev.map((reel) =>
+            reel.id === reelId ? { ...reel, likes: count } : reel
+          )
+        );
+      });
+
+      socket.on("newComment", ({ reelId, comment }) => {
+        setReels((prev) =>
+          prev.map((reel) =>
+            reel.id === reelId
+              ? { ...reel, comments: (reel.comments || 0) + 1 }
+              : reel
+          )
+        );
+      });
+
+      socket.on("reelShared", ({ reelId, count }) => {
+        setReels((prev) =>
+          prev.map((reel) =>
+            reel.id === reelId ? { ...reel, shares: count } : reel
+          )
+        );
+      });
+
+      return () => {
+        socket.off("reelLiked");
+        socket.off("newComment");
+        socket.off("reelShared");
+      };
+    }, []);
+
+    const togglePlay = (index) => {
+      const video = videoRefs.current[index];
+      if (video) {
+        if (isPlaying) video.pause();
+        else video.play();
+        setIsPlaying(!isPlaying);
+      }
+    };
+
+    const toggleMute = () => {
+      videoRefs.current.forEach((video) => {
+        if (video) video.muted = !isMuted;
+      });
+      setIsMuted(!isMuted);
+    };
+
+    const handleSwipe = (direction) => {
+      if (direction === "up" && currentIndex < reels.length - 1) {
+        videoRefs.current[currentIndex].pause();
+        setCurrentIndex(currentIndex + 1);
+        setIsPlaying(true);
+      } else if (direction === "down" && currentIndex > 0) {
+        videoRefs.current[currentIndex].pause();
+        setCurrentIndex(currentIndex - 1);
+        setIsPlaying(true);
+      }
+    };
+
+    useEffect(() => {
+      let touchStartY = 0;
+      const handleTouchStart = (e) => {
+        touchStartY = e.touches[0].clientY;
+      };
+      const handleTouchEnd = (e) => {
+        const touchEndY = e.changedTouches[0].clientY;
+        const deltaY = touchEndY - touchStartY;
+        if (deltaY > 50) handleSwipe("down");
+        if (deltaY < -50) handleSwipe("up");
+      };
+      const container = document.getElementById("reels-root");
+      container.addEventListener("touchstart", handleTouchStart);
+      container.addEventListener("touchend", handleTouchEnd);
+      return () => {
+        container.removeEventListener("touchstart", handleTouchStart);
+        container.removeEventListener("touchend", handleTouchEnd);
+      };
+    }, [currentIndex]);
+
+    useEffect(() => {
+      videoRefs.current.forEach((video, index) => {
+        if (video) {
+          video.muted = isMuted;
+          if (index === currentIndex) video.play().catch(() => {});
+          else {
+            video.pause();
+            video.currentTime = 0;
+          }
+        }
+      });
+    }, [currentIndex, isMuted]);
+
+    const handleLike = async (reelId) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/reels/${reelId}/like`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const handleComment = async (reelId, content) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/reels/${reelId}/comment`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ content }),
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const handleShare = async (reelId) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/reels/${reelId}/share`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ type: "repost" }),
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    return (
+      <div className="relative w-full h-full">
+        {reels.map((reel, index) => (
+          <div
+            key={reel.id}
+            className="video-wrapper"
+            style={{
+              transform: `translateY(${(index - currentIndex) * 100}%)`,
+            }}
+          >
+            <video
+              ref={(el) => (videoRefs.current[index] = el)}
+              className="video-player"
+              src={`http://localhost:5000${reel.videoUrl}`}
+              loop
+              playsInline
+              onClick={() => togglePlay(index)}
+            />
+            <div className="video-overlay">
+              <div className="flex items-center mb-2">
+                <img
+                  src={
+                    reel.avatar ||
+                    "https://randomuser.me/api/portraits/women/44.jpg"
+                  }
+                  alt={reel.username}
+                  className="w-8 h-8 rounded-full mr-2"
+                />
+                <span className="font-medium">{reel.username}</span>
+              </div>
+              <p className="text-sm">{reel.description}</p>
+            </div>
+            <div className="video-controls">
+              <div></div>
+              <div className="side-buttons">
+                <div
+                  className="side-button"
+                  onClick={() => handleLike(reel.id)}
+                >
+                  <i className="far fa-heart"></i>
+                  <span>{reel.likes || 0}</span>
+                </div>
+                <div
+                  className="side-button"
+                  onClick={() => {
+                    const content = prompt("Enter your comment:");
+                    if (content) handleComment(reel.id, content);
+                  }}
+                >
+                  <i className="far fa-comment"></i>
+                  <span>{reel.comments || 0}</span>
+                </div>
+                <div
+                  className="side-button"
+                  onClick={() => handleShare(reel.id)}
+                >
+                  <i className="fas fa-share"></i>
+                  <span>{reel.shares || 0}</span>
+                </div>
+                <div className="control-button" onClick={toggleMute}>
+                  <i
+                    className={
+                      isMuted ? "fas fa-volume-mute" : "fas fa-volume-up"
+                    }
+                  ></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const UploadForm = () => {
+    const [file, setFile] = useState(null);
+    const [description, setDescription] = useState("");
+    const [hashtags, setHashtags] = useState("");
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("video", file);
+      formData.append("description", description);
+      formData.append("hashtags", hashtags);
+
+      try {
+        const response = await fetch("http://localhost:5000/api/reels", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: formData,
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert("Reel uploaded!");
+          window.location.reload();
+        } else {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to upload reel");
+      }
+    };
+
+    return (
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md"
+      >
+        <div className="mb-4">
+          <label className="block text-gray-700">Video File</label>
+          <input
+            type="file"
+            accept="video/*"
+            onChange={(e) => setFile(e.target.files[0])}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Description</label>
+          <input
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Hashtags</label>
+          <input
+            type="text"
+            value={hashtags}
+            onChange={(e) => setHashtags(e.target.value)}
+            className="w-full p-2 border rounded"
+            placeholder="#VibeZone #Reels"
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full py-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded"
+        >
+          Upload Reel
+        </button>
+      </form>
+    );
+  };
+
+  ReactDOM.render(<UploadForm />, document.getElementById("upload-root"));
+  ReactDOM.render(<ReelsApp />, document.getElementById("reels-root"));
+</script>

@@ -1,13 +1,46 @@
 const express = require("express");
-const router = express.Router();
-const postController = require("../controllers/postController");
 const auth = require("../middleware/auth");
-const validateId = require("../middleware/validateId");
+const db = require("../config/database");
+const logger = require("../utils/logger");
+const { sendResponse } = require("../utils/response");
 
-router.get("/", postController.getPosts);
-router.get("/:id", validateId, postController.getPostById);
-router.post("/", auth, postController.createPost);
-router.put("/:id", auth, validateId, postController.updatePost);
-router.delete("/:id", auth, validateId, postController.deletePost);
+const router = express.Router();
+
+// Get all posts
+router.get("/", auth, async (req, res) => {
+  try {
+    const posts = await new Promise((resolve, reject) => {
+      db.all("SELECT * FROM posts ORDER BY createdAt DESC", [], (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      });
+    });
+    sendResponse(res, 200, "Posts retrieved", posts);
+  } catch (err) {
+    logger.error("Error fetching posts:", err);
+    sendResponse(res, 500, "Error fetching posts", null, err.message);
+  }
+});
+
+// Create a post
+router.post("/", auth, async (req, res) => {
+  const { content, imageUrl, videoUrl, hashtags } = req.body;
+  try {
+    await new Promise((resolve, reject) => {
+      db.run(
+        "INSERT INTO posts (userId, content, imageUrl, videoUrl, hashtags) VALUES (?, ?, ?, ?, ?)",
+        [req.user.id, content, imageUrl, videoUrl, hashtags],
+        (err) => {
+          if (err) reject(err);
+          resolve();
+        }
+      );
+    });
+    sendResponse(res, 201, "Post created");
+  } catch (err) {
+    logger.error("Error creating post:", err);
+    sendResponse(res, 400, "Error creating post", null, err.message);
+  }
+});
 
 module.exports = router;

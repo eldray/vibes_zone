@@ -1,0 +1,252 @@
+<div id="home-root"></div>
+
+<script type="text/babel">
+  const { useState, useEffect } = React;
+
+  const HomePage = () => {
+    const [stories, setStories] = useState([]);
+    const [posts, setPosts] = useState([]);
+
+    useEffect(() => {
+      // Fetch stories
+      fetch("http://localhost:5000/api/stories")
+        .then((res) => res.json())
+        .then((data) => setStories(data.data || []))
+        .catch((err) => console.error(err));
+
+      // Fetch posts
+      fetch("http://localhost:5000/api/posts?page=1&limit=9")
+        .then((res) => res.json())
+        .then((data) => setPosts(data.data || []))
+        .catch((err) => console.error(err));
+
+      // Socket.IO for real-time post updates
+      socket.on("newPost", (post) => {
+        setPosts((prev) => [post, ...prev]);
+      });
+
+      socket.on("postLiked", ({ postId, count }) => {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.id === postId ? { ...post, likes: count } : post
+          )
+        );
+      });
+
+      socket.on("newComment", ({ postId, comment }) => {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.id === postId
+              ? { ...post, comments: (post.comments || 0) + 1 }
+              : post
+          )
+        );
+      });
+
+      socket.on("postShared", ({ postId, count }) => {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.id === postId ? { ...post, shares: count } : post
+          )
+        );
+      });
+
+      return () => {
+        socket.off("newPost");
+        socket.off("postLiked");
+        socket.off("newComment");
+        socket.off("postShared");
+      };
+    }, []);
+
+    const handleLike = async (postId) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/posts/${postId}/like`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const handleUnlike = async (postId) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/posts/${postId}/like`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const handleComment = async (postId, content) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/posts/${postId}/comment`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ content }),
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const handleShare = async (postId) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/posts/${postId}/share`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ type: "repost" }),
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    return (
+      <div>
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">📖 Stories</h2>
+          <div className="flex space-x-4 overflow-x-auto video-scroll-container">
+            {stories.map((story) => (
+              <div key={story.id} className="video-card flex-none w-20">
+                <div className="story-ring">
+                  <div className="story-ring-inner">
+                    <img
+                      className="w-16 h-16 rounded-full object-cover"
+                      src={
+                        story.user.avatar ||
+                        "https://randomuser.me/api/portraits/women/22.jpg"
+                      }
+                      alt="Story"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-center mt-2 truncate">
+                  @{story.user.username}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">🔥 For You</h2>
+            <div className="flex items-center space-x-2">
+              <button className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <i className="fas fa-chevron-left"></i>
+              </button>
+              <button className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <i className="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {posts.map((post) => (
+              <div
+                key={post.id}
+                className="bg-white rounded-xl shadow-md overflow-hidden"
+              >
+                <div className="p-4">
+                  <div className="flex items-center mb-4">
+                    <img
+                      className="w-10 h-10 rounded-full mr-3"
+                      src={
+                        post.avatar ||
+                        "https://randomuser.me/api/portraits/women/22.jpg"
+                      }
+                      alt="User"
+                    />
+                    <div>
+                      <h4 className="font-medium">{post.username}</h4>
+                      <p className="text-xs text-gray-500">
+                        {new Date(post.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mb-4">{post.content}</p>
+                  {post.imageUrl && (
+                    <div className="mb-4">
+                      <img
+                        className="w-full h-64 object-cover rounded-lg"
+                        src={`http://localhost:5000${post.imageUrl}`}
+                        alt="Post"
+                      />
+                    </div>
+                  )}
+                  <div className="flex justify-between text-gray-500">
+                    <button
+                      onClick={() => handleLike(post.id)}
+                      className="flex items-center hover:text-pink-500"
+                    >
+                      <i className="far fa-heart mr-1"></i> {post.likes || 0}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const content = prompt("Enter your comment:");
+                        if (content) handleComment(post.id, content);
+                      }}
+                      className="flex items-center hover:text-blue-500"
+                    >
+                      <i className="far fa-comment mr-1"></i>{" "}
+                      {post.comments || 0}
+                    </button>
+                    <button
+                      onClick={() => handleShare(post.id)}
+                      className="flex items-center hover:text-green-500"
+                    >
+                      <i className="fas fa-share mr-1"></i> {post.shares || 0}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  ReactDOM.render(<HomePage />, document.getElementById("home-root"));
+</script>

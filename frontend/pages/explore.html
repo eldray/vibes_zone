@@ -1,0 +1,428 @@
+<div id="explore-root"></div>
+
+<script type="text/babel">
+  const { useState, useEffect } = React;
+
+  const ExplorePage = () => {
+    const [posts, setPosts] = useState([]);
+    const [hashtags, setHashtags] = useState([]);
+    const [creators, setCreators] = useState([]);
+    const [search, setSearch] = useState("");
+    const [category, setCategory] = useState("All");
+
+    useEffect(() => {
+      // Fetch trending posts
+      fetch("http://localhost:5000/api/posts?page=1&limit=3")
+        .then((res) => res.json())
+        .then((data) => setPosts(data.data || []))
+        .catch((err) => console.error(err));
+
+      // Fetch trending hashtags
+      fetch("http://localhost:5000/api/hashtags")
+        .then((res) => res.json())
+        .then((data) => setHashtags(data.data || []))
+        .catch((err) => console.error(err));
+
+      // Fetch recommended creators
+      fetch("http://localhost:5000/api/users/recommended", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+        .then((res) => res.json())
+        .then((data) => setCreators(data.data || []))
+        .catch((err) => console.error(err));
+
+      // Socket.IO for real-time updates
+      socket.on("postLiked", ({ postId, count }) => {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.id === postId ? { ...post, likes: count } : post
+          )
+        );
+      });
+
+      socket.on("newComment", ({ postId, comment }) => {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.id === postId
+              ? { ...post, comments: (post.comments || 0) + 1 }
+              : post
+          )
+        );
+      });
+
+      socket.on("postShared", ({ postId, count }) => {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.id === postId ? { ...post, shares: count } : post
+          )
+        );
+      });
+
+      return () => {
+        socket.off("postLiked");
+        socket.off("newComment");
+        socket.off("postShared");
+      };
+    }, []);
+
+    const handleLike = async (postId) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/posts/${postId}/like`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const handleComment = async (postId, content) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/posts/${postId}/comment`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ content }),
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const handleShare = async (postId) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/posts/${postId}/share`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ type: "repost" }),
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const handleFollow = async (userId) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/users/${userId}/follow`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.success) {
+          setCreators((prev) =>
+            prev.map((creator) =>
+              creator.id === userId
+                ? { ...creator, isFollowing: true }
+                : creator
+            )
+          );
+        } else {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const categories = [
+      "All",
+      "Music",
+      "Art",
+      "Food",
+      "Activism",
+      "Gaming",
+      "Wellness",
+      "Fashion",
+      "Tech",
+    ];
+
+    return (
+      <div>
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="relative flex-1">
+              <div className="search-bar absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i className="fas fa-search text-gray-400"></i>
+              </div>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-full bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                placeholder="Search vibes, hashtags, people..."
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                <button
+                  type="button"
+                  className="filter-btn p-1 rounded-full text-gray-400 hover:text-pink-500 focus:outline-none"
+                >
+                  <i className="fas fa-sliders-h"></i>
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-500">
+                Sort by:
+              </span>
+              <select className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 rounded-full bg-white shadow-sm">
+                <option>Trending</option>
+                <option>Newest</option>
+                <option>Most Liked</option>
+                <option>Near You</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <h2 className="text-2xl font-bold text-gray-900">
+                🔥 Trending Now
+              </h2>
+              <span className="trending-pill px-3 py-1 bg-pink-100 text-pink-600 text-xs font-bold rounded-full">
+                LIVE
+              </span>
+            </div>
+            <a
+              href="#"
+              className="text-sm font-medium text-pink-500 hover:text-pink-600 flex items-center"
+            >
+              See all <i className="fas fa-chevron-right ml-1 text-xs"></i>
+            </a>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {posts.map((post) => (
+              <div
+                key={post.id}
+                className="explore-card bg-white rounded-xl overflow-hidden shadow-md relative"
+              >
+                <div className="trending-badge">Trending</div>
+                <img
+                  className="w-full h-64 object-cover"
+                  src={`http://localhost:5000${post.imageUrl}`}
+                  alt="Trending content"
+                />
+                <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+                  <div className="flex items-center mb-2">
+                    <img
+                      className="w-8 h-8 rounded-full mr-2 border-2 border-white"
+                      src={
+                        post.avatar ||
+                        "https://randomuser.me/api/portraits/women/44.jpg"
+                      }
+                      alt="User"
+                    />
+                    <span className="text-white font-medium">
+                      {post.username}
+                    </span>
+                  </div>
+                  <h3 className="text-white font-bold text-lg mb-1">
+                    {post.content}
+                  </h3>
+                  <div className="flex justify-between text-xs text-white">
+                    <button
+                      onClick={() => handleLike(post.id)}
+                      className="flex items-center hover:text-pink-500"
+                    >
+                      <i className="fas fa-heart mr-1"></i> {post.likes || 0}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const content = prompt("Enter your comment:");
+                        if (content) handleComment(post.id, content);
+                      }}
+                      className="flex items-center hover:text-blue-500"
+                    >
+                      <i className="fas fa-comment mr-1"></i>{" "}
+                      {post.comments || 0}
+                    </button>
+                    <button
+                      onClick={() => handleShare(post.id)}
+                      className="flex items-center hover:text-green-500"
+                    >
+                      <i className="fas fa-share mr-1"></i> {post.shares || 0}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            ✨ Categories
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                className={`category-chip px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium ${
+                  category === cat ? "active" : ""
+                }`}
+                onClick={() => setCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
+              🌍 Discover New Vibes
+            </h2>
+            <div className="flex items-center space-x-2">
+              <button className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <i className="fas fa-chevron-left"></i>
+              </button>
+              <button className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <i className="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {posts.map((post) => (
+              <div
+                key={post.id}
+                className="explore-card bg-white rounded-lg overflow-hidden shadow-sm"
+              >
+                <img
+                  className="w-full h-40 object-cover"
+                  src={`http://localhost:5000${post.imageUrl}`}
+                  alt="Discover content"
+                />
+                <div className="p-3">
+                  <h3 className="font-medium text-sm mb-1">{post.content}</h3>
+                  <p className="text-xs text-gray-500">
+                    @{post.username} • {post.likes || 0} vibes
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            # Trending Hashtags
+          </h2>
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+              {hashtags.map((hashtag) => (
+                <div key={hashtag.id} className="flex items-start">
+                  <div className="flex-shrink-0 bg-pink-100 rounded-lg p-3 mr-4">
+                    <i className="fas fa-hashtag text-pink-500 text-xl"></i>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900">
+                      #{hashtag.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-2">
+                      {hashtag.postCount} posts
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      Trending in {hashtag.name}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-gray-200 px-6 py-4 bg-gray-50">
+              <a
+                href="#"
+                className="text-sm font-medium text-pink-500 hover:text-pink-600 flex items-center justify-center"
+              >
+                View all trending hashtags
+                <i className="fas fa-chevron-right ml-1 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
+              ⭐ Recommended Creators
+            </h2>
+            <a
+              href="#"
+              className="text-sm font-medium text-pink-500 hover:text-pink-600"
+            >
+              See all
+            </a>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {creators.map((creator) => (
+              <div
+                key={creator.id}
+                className="bg-white rounded-xl shadow-sm overflow-hidden text-center p-4 hover:shadow-md transition-all duration-300"
+              >
+                <div className="story-ring mx-auto mb-3">
+                  <div className="story-ring-inner">
+                    <img
+                      className="w-16 h-16 rounded-full object-cover"
+                      src={
+                        creator.avatar ||
+                        "https://randomuser.me/api/portraits/women/22.jpg"
+                      }
+                      alt="Creator"
+                    />
+                  </div>
+                </div>
+                <h3 className="font-bold text-gray-900">@{creator.username}</h3>
+                <p className="text-xs text-gray-500 mb-3">
+                  {creator.bio || "Creator"}
+                </p>
+                <button
+                  onClick={() => handleFollow(creator.id)}
+                  className="w-full py-2 bg-pink-50 text-pink-500 rounded-full text-sm font-medium hover:bg-pink-100"
+                  disabled={creator.isFollowing}
+                >
+                  {creator.isFollowing ? "Following" : "Follow"}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  ReactDOM.render(<ExplorePage />, document.getElementById("explore-root"));
+</script>

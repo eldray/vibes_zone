@@ -1,0 +1,50 @@
+<div class="py-12">
+  <h1 class="text-3xl font-bold text-gray-900 mb-4">Vibe Stories</h1>
+  <div
+    id="stories-container"
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+  ></div>
+</div>
+<script>
+  async function loadStories() {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.id) {
+      window.location.href = "?page=auth";
+      return;
+    }
+    try {
+      const response = await fetch("http://localhost:5000/api/stories", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json();
+      if (data.success) {
+        const container = document.getElementById("stories-container");
+        if (data.data.length === 0) {
+          container.innerHTML = `<p class="text-gray-500">No stories available.</p>`;
+        } else {
+          container.innerHTML = data.data
+            .map(
+              (story) => `
+                     <div class="story-ring p-1">
+                       <div class="story-ring-inner">
+                         <img src="http://localhost:5000${
+                           story.imageUrl || story.videoUrl
+                         }" alt="Story" class="h-32 w-32 rounded-full object-cover">
+                       </div>
+                     </div>
+                   `
+            )
+            .join("");
+        }
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load stories");
+    }
+  }
+  document.addEventListener("DOMContentLoaded", loadStories);
+</script>

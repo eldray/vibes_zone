@@ -1,16 +1,18 @@
-const jwt = require("jsonwebtoken");
+const passport = require("passport");
+const { sendResponse } = require("../utils/response");
 
-const auth = (req, res, next) => {
-  const token = req.header("Authorization")?.replace("Bearer ", "");
-  if (!token) return res.status(401).json({ error: "No token provided" });
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+module.exports = (req, res, next) => {
+  passport.authenticate("jwt", { session: false }, (err, user, info) => {
+    if (err || !user) {
+      return sendResponse(
+        res,
+        401,
+        "Unauthorized",
+        null,
+        info?.message || "Invalid token"
+      );
+    }
+    req.user = user;
     next();
-  } catch (error) {
-    res.status(401).json({ error: "Invalid token" });
-  }
+  })(req, res, next);
 };
-
-module.exports = auth;

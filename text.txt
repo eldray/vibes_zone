@@ -1,64 +1,68 @@
-vibezone/
+vibeszone/
 ├── backend/
 │   ├── config/
-│   │   └── database.js
+│   │   ├── database.js
+│   │   ├── passport.js
+│   │   └── multer.js
 │   ├── controllers/
 │   │   ├── authController.js
 │   │   ├── postController.js
 │   │   ├── reelController.js
-│   │   └── messageController.js
+│   │   ├── messageController.js
+│   │   ├── storyController.js
+│   │   ├── hashtagController.js
+│   │   ├── notificationController.js
+│   │   └── userController.js
 │   ├── middleware/
-│   │   └── auth.js
+│   │   ├── auth.js
+│   │   ├── rateLimit.js
+│   │   └── error.js
 │   ├── models/
 │   │   ├── User.js
 │   │   ├── Post.js
 │   │   ├── Reel.js
-│   │   └── Message.js
+│   │   ├── Message.js
+│   │   ├── Story.js
+│   │   ├── Like.js
+│   │   ├── Comment.js
+│   │   ├── Share.js
+│   │   ├── Hashtag.js
+│   │   ├── Notification.js
+│   │   └── Session.js
 │   ├── routes/
 │   │   ├── auth.js
 │   │   ├── posts.js
 │   │   ├── reels.js
-│   │   └── messages.js
+│   │   ├── messages.js
+│   │   ├── stories.js
+│   │   ├── hashtags.js
+│   │   ├── notifications.js
+│   │   └── users.js
 │   ├── public/
 │   │   └── uploads/
 │   ├── sockets/
-│   │   └── chat.js
+│   │   ├── chat.js
+│   │   └── notifications.js
+│   ├── utils/
+│   │   ├── response.js
+│   │   ├── validator.js
+│   │   └── logger.js
 │   ├── package.json
 │   ├── server.js
-│   └── .env
+│   ├── .env
+│   └── .gitignore
+│   
 ├── frontend/
-│   ├── base.html               # Base template
-│   ├── partials/
-│   │   ├── home.html          # Content for index.html
-│   │   ├── explore.html       # Content for explore.html
-│   │   ├── reels.html         # Content for reels.html
-│   │   ├── messages.html      # Content for messages.html
-│   │   ├── auth.html          # Content for auth.html
-│   ├── assets/
-│   └── scripts/
-│       └── router.js          # JavaScript for loading partials
-├── README.md
-└── .gitignore
-
-
-Step-by-Step Guide
-Step 1: Set Up Social Login APIs (Google and Facebook)
-To enable Google and Facebook logins, you need to create developer accounts and obtain OAuth credentials. These are free but require setup.
-
-1.1: Google OAuth
-Go to Google Cloud Console.
-Create a new project (e.g., VibeZone).
-Navigate to APIs & Services > Credentials.
-Click Create Credentials > OAuth 2.0 Client IDs.
-Select Web application and configure:
-Authorized JavaScript origins: http://localhost:3000
-Authorized redirect URIs: http://localhost:3000/api/auth/google/callback
-Save the Client ID and Client Secret.
-1.2: Facebook OAuth
-Go to Facebook Developers.
-Create a new app (e.g., VibeZone).
-Navigate to Settings > Basic.
-Add Facebook Login product from the dashboard.
-Configure Settings > Facebook Login:
-Valid OAuth Redirect URIs: http://localhost:3000/api/auth/facebook/callback
-Save the App ID and App Secret.
+│   ├── pages/
+│   │   ├── home.html
+│   │   ├── explore.html
+│   │   ├── reels.html
+│   │   ├── messages.html
+│   │   ├── auth.html
+│   │   ├── profile.html
+│   │   └── notifications.html
+│   ├── scripts/
+│   │   ├── router.js
+│   │   └── api.js
+│   ├── base.html
+│   └── package.json

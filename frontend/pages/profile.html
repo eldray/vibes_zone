@@ -1,0 +1,415 @@
+<h2 class="text-2xl font-bold text-gray-900 mb-6">👤 Your Profile</h2>
+<div id="profile-root" class="profile-container"></div>
+
+<style>
+  .profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  .avatar-upload {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .avatar-upload:hover::after {
+    content: "Change Avatar";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .tab {
+    transition: all 0.3s ease;
+  }
+
+  .tab:hover {
+    background-color: #f3f4f6;
+  }
+
+  .tab.active {
+    border-bottom: 2px solid #ff6b95;
+    color: #ff6b95;
+    font-weight: 600;
+  }
+</style>
+
+<script type="text/babel">
+  const { useState, useEffect } = React;
+
+  const ProfilePage = () => {
+    const [user, setUser] = useState(null);
+    const [posts, setPosts] = useState([]);
+    const [reels, setReels] = useState([]);
+    const [activeTab, setActiveTab] = useState("posts");
+    const [isEditing, setIsEditing] = useState(false);
+    const [bio, setBio] = useState("");
+    const [avatar, setAvatar] = useState(null);
+
+    useEffect(() => {
+      // Fetch user profile
+      fetch("http://localhost:5000/api/users/profile", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setUser(data.data);
+            setBio(data.data.bio || "");
+          } else {
+            alert(data.message);
+            window.location.href = "?page=auth";
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          window.location.href = "?page=auth";
+        });
+
+      // Fetch user posts
+      fetch(
+        `http://localhost:5000/api/posts?userId=${
+          JSON.parse(localStorage.getItem("user"))?.id
+        }&page=1&limit=9`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      )
+        .then((res) => res.json())
+        .then((data) => setPosts(data.data || []))
+        .catch((err) => console.error(err));
+
+      // Fetch user reels
+      fetch(
+        `http://localhost:5000/api/reels?userId=${
+          JSON.parse(localStorage.getItem("user"))?.id
+        }&page=1&limit=9`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      )
+        .then((res) => res.json())
+        .then((data) => setReels(data.data || []))
+        .catch((err) => console.error(err));
+
+      // Socket.IO for real-time post/reel updates
+      socket.on("newPost", (post) => {
+        if (post.userId === JSON.parse(localStorage.getItem("user"))?.id) {
+          setPosts((prev) => [post, ...prev]);
+        }
+      });
+
+      socket.on("newReel", (reel) => {
+        if (reel.userId === JSON.parse(localStorage.getItem("user"))?.id) {
+          setReels((prev) => [reel, ...prev]);
+        }
+      });
+
+      return () => {
+        socket.off("newPost");
+        socket.off("newReel");
+      };
+    }, []);
+
+    const handleLike = async (postId) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/posts/${postId}/like`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const handleComment = async (postId, content) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/posts/${postId}/comment`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ content }),
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const handleShare = async (postId) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/posts/${postId}/share`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ type: "repost" }),
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const handleUpdateProfile = async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("bio", bio);
+      if (avatar) {
+        formData.append("avatar", avatar);
+      }
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/users/profile",
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: formData,
+          }
+        );
+        const data = await response.json();
+        if (data.success) {
+          setUser(data.data);
+          setIsEditing(false);
+          localStorage.setItem("user", JSON.stringify(data.data));
+          alert("Profile updated!");
+        } else {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to update profile");
+      }
+    };
+
+    if (!user) return <div>Loading...</div>;
+
+    return (
+      <div className="profile-container">
+        <div className="flex items-center mb-8">
+          <div className="avatar-upload">
+            <img
+              src={
+                user.avatar
+                  ? `http://localhost:5000${user.avatar}`
+                  : "https://randomuser.me/api/portraits/women/22.jpg"
+              }
+              alt="Avatar"
+              className="w-24 h-24 rounded-full mr-6 border-4 border-white shadow-sm"
+            />
+            {isEditing && (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setAvatar(e.target.files[0])}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            )}
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold">{user.username}</h3>
+            <p className="text-gray-600">{user.bio || "No bio yet"}</p>
+            <div className="flex space-x-4 mt-2 text-sm text-gray-500">
+              <span>{user.followers || 0} Followers</span>
+              <span>{user.following || 0} Following</span>
+              <span>{posts.length} Posts</span>
+              <span>{reels.length} Reels</span>
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={() => setIsEditing(!isEditing)}
+          className="mb-6 px-4 py-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded-lg hover:from-pink-600 hover:to-orange-600"
+        >
+          {isEditing ? "Cancel" : "Edit Profile"}
+        </button>
+        {isEditing && (
+          <form onSubmit={handleUpdateProfile} className="mb-8">
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-medium mb-1">
+                Bio
+              </label>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="Tell us about yourself"
+                rows="4"
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded-lg hover:from-pink-600 hover:to-orange-600"
+            >
+              Save Changes
+            </button>
+          </form>
+        )}
+        <div className="border-b border-gray-200 mb-6">
+          <nav className="flex space-x-4">
+            <button
+              className={`tab px-4 py-2 text-sm font-medium ${
+                activeTab === "posts" ? "active" : ""
+              }`}
+              onClick={() => setActiveTab("posts")}
+            >
+              Posts
+            </button>
+            <button
+              className={`tab px-4 py-2 text-sm font-medium ${
+                activeTab === "reels" ? "active" : ""
+              }`}
+              onClick={() => setActiveTab("reels")}
+            >
+              Reels
+            </button>
+          </nav>
+        </div>
+        {activeTab === "posts" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {posts.map((post) => (
+              <div
+                key={post.id}
+                className="bg-white rounded-xl shadow-md overflow-hidden"
+              >
+                <div className="p-4">
+                  <div className="flex items-center mb-4">
+                    <img
+                      className="w-10 h-10 rounded-full mr-3"
+                      src={
+                        post.avatar ||
+                        "https://randomuser.me/api/portraits/women/22.jpg"
+                      }
+                      alt="User"
+                    />
+                    <div>
+                      <h4 className="font-medium">{post.username}</h4>
+                      <p className="text-xs text-gray-500">
+                        {new Date(post.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mb-4">{post.content}</p>
+                  {post.imageUrl && (
+                    <div className="mb-4">
+                      <img
+                        className="w-full h-64 object-cover rounded-lg"
+                        src={`http://localhost:5000${post.imageUrl}`}
+                        alt="Post"
+                      />
+                    </div>
+                  )}
+                  <div className="flex justify-between text-gray-500">
+                    <button
+                      onClick={() => handleLike(post.id)}
+                      className="flex items-center hover:text-pink-500"
+                    >
+                      <i className="far fa-heart mr-1"></i> {post.likes || 0}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const content = prompt("Enter your comment:");
+                        if (content) handleComment(post.id, content);
+                      }}
+                      className="flex items-center hover:text-blue-500"
+                    >
+                      <i className="far fa-comment mr-1"></i>{" "}
+                      {post.comments || 0}
+                    </button>
+                    <button
+                      onClick={() => handleShare(post.id)}
+                      className="flex items-center hover:text-green-500"
+                    >
+                      <i className="fas fa-share mr-1"></i> {post.shares || 0}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {activeTab === "reels" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {reels.map((reel) => (
+              <div
+                key={reel.id}
+                className="bg-white rounded-xl shadow-md overflow-hidden"
+              >
+                <video
+                  className="w-full h-64 object-cover"
+                  src={`http://localhost:5000${reel.videoUrl}`}
+                  controls
+                />
+                <div className="p-4">
+                  <p className="mb-2">{reel.description}</p>
+                  <div className="flex justify-between text-gray-500">
+                    <button
+                      onClick={() => handleLike(reel.id)}
+                      className="flex items-center hover:text-pink-500"
+                    >
+                      <i className="far fa-heart mr-1"></i> {reel.likes || 0}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const content = prompt("Enter your comment:");
+                        if (content) handleComment(reel.id, content);
+                      }}
+                      className="flex items-center hover:text-blue-500"
+                    >
+                      <i className="far fa-comment mr-1"></i>{" "}
+                      {reel.comments || 0}
+                    </button>
+                    <button
+                      onClick={() => handleShare(reel.id)}
+                      className="flex items-center hover:text-green-500"
+                    >
+                      <i className="fas fa-share mr-1"></i> {reel.shares || 0}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  ReactDOM.render(<ProfilePage />, document.getElementById("profile-root"));
+</script>

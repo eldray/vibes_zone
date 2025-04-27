@@ -1,26 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const reelController = require("../controllers/reelController");
-const auth = require("../middleware/auth");
-const validateId = require("../middleware/validateId");
+const {
+  createReel,
+  getReels,
+  getReel,
+  likeReel,
+  unlikeReel,
+  addComment,
+  getComments,
+  shareReel,
+} = require("../controllers/reelController");
+const authMiddleware = require("../middleware/auth");
+const rateLimit = require("../middleware/rateLimit");
+const upload = require("../config/multer");
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "public/uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
-});
-const upload = multer({ storage });
-
-router.post("/", auth, upload.single("video"), reelController.uploadReel);
-router.get("/", reelController.getReels);
-router.get("/:id", validateId, reelController.getReelById);
-router.put(
-  "/:id",
-  auth,
-  validateId,
-  upload.single("video"),
-  reelController.updateReel
-);
-router.delete("/:id", auth, validateId, reelController.deleteReel);
+router.post("/", authMiddleware, upload.single("video"), createReel);
+router.get("/", getReels);
+router.get("/:id", getReel);
+router.post("/:id/like", authMiddleware, rateLimit, likeReel);
+router.delete("/:id/like", authMiddleware, rateLimit, unlikeReel);
+router.post("/:id/comment", authMiddleware, rateLimit, addComment);
+router.get("/:id/comments", getComments);
+router.post("/:id/share", authMiddleware, rateLimit, shareReel);
 
 module.exports = router;
