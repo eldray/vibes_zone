@@ -1,0 +1,43 @@
+const ReelCard = ({ reel }) => {
+  const renderMedia = (mediaUrl) => {
+    if (mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be')) {
+      let embedUrl = mediaUrl.replace('watch?v=', 'embed/').replace('shorts/', 'embed/');
+      if (embedUrl.includes('youtu.be')) {
+        const videoId = embedUrl.split('/').pop();
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+      return (
+        <iframe
+          className="w-full h-96 rounded-lg"
+          src={embedUrl}
+          title="YouTube reel"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      );
+    }
+    return <video src={mediaUrl} controls className="w-full h-96 rounded-lg" />;
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-md p-4">
+      <div className="flex items-center mb-2">
+        <img src={reel.user?.avatar} alt={reel.user?.username} className="w-8 h-8 rounded-full mr-2" />
+        <span className="font-semibold">{reel.user?.username}</span>
+      </div>
+      {renderMedia(reel.media)}
+      <p className="mt-2">{reel.caption}</p>
+      <div className="flex flex-wrap gap-2 mt-2">
+        {reel.hashtags.map((tag) => (
+          <span key={tag} className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            {tag}
+          </span>
+        ))}
+      </div>
+      <p className="text-sm text-gray-600 mt-2">{reel.views} views</p>
+    </div>
+  );
+};
+
+export default ReelCard;

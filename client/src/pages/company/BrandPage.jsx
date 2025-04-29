@@ -1,0 +1,42 @@
+import React from "react";
+import "./pages.css";
+
+function BrandPage() {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h1 className="text-3xl font-bold gradient-text mb-4">VibeZone Brand</h1>
+      <p className="text-gray-600 mb-6">
+        The VibeZone brand is all about energy, creativity, and connection. Our
+        iconic logo and vibrant aesthetic reflect the spirit of Gen Z culture.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Brand Guidelines
+          </h2>
+          <p className="text-gray-600">
+            Learn how to use our logo, colors, and typography to create
+            authentic VibeZone experiences.
+          </p>
+          <a
+            href="#"
+            className="mt-4 inline-block px-4 py-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded-lg hover:from-pink-600 hover:to-orange-600"
+          >
+            Download Brand Kit
+          </a>
+        </div>
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Partner With Us
+          </h2>
+          <p className="text-gray-600">
+            Collaborate with VibeZone to reach a global audience of young
+            creators. Contact our team to explore partnership opportunities.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default BrandPage;
